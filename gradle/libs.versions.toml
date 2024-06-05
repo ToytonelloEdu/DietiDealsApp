@@ -1,16 +1,34 @@
 [versions]
-agp = "8.4.0"
-kotlin = "1.9.0"
+agp = "8.4.1"
+composeBomVersion = "2024.05.00"
+espressoIntents = "3.5.1"
+kotlin = "1.9.10"
 coreKtx = "1.13.1"
 junit = "4.13.2"
 junitVersion = "1.1.5"
 espressoCore = "3.5.1"
-lifecycleRuntimeKtx = "2.7.0"
+kotlinxSerializationJson = "1.5.1"
+lifecycleLivedataKtx = "2.8.1"
+lifecycleRuntimeKtx = "2.8.1"
 activityCompose = "1.9.0"
-composeBom = "2023.08.00"
+composeBom = "2024.05.00"
+navigationCompose = "2.7.7"
+retrofit = "2.9.0"
+okhttp = "4.11.0"
+retrofit2KotlinxSerializationConverter = "1.0.0"
+uiTextGoogleFonts = "1.6.7"
 
 [libraries]
+androidx-compose-bom-v20240500 = { module = "androidx.compose:compose-bom", version.ref = "composeBomVersion" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-espresso-intents = { module = "androidx.test.espresso:espresso-intents", version.ref = "espressoIntents" }
+androidx-lifecycle-livedata-ktx = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycleLivedataKtx" }
+androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycleLivedataKtx" }
+androidx-lifecycle-viewmodel-savedstate = { module = "androidx.lifecycle:lifecycle-viewmodel-savedstate", version.ref = "lifecycleLivedataKtx" }
+androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigationCompose" }
+androidx-navigation-testing = { module = "androidx.navigation:navigation-testing", version.ref = "navigationCompose" }
+androidx-runtime = { module = "androidx.compose.runtime:runtime" }
+androidx-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -24,6 +42,18 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
+material3 = { module = "androidx.compose.material3:material3" }
+okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
+retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
+retrofit2-kotlinx-serialization-converter = { module = "com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter", version.ref = "retrofit2KotlinxSerializationConverter" }
+ui = { module = "androidx.compose.ui:ui" }
+ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
+ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
+ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
+ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
+ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+androidx-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
