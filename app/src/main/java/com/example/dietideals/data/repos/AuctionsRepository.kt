@@ -5,6 +5,7 @@ import com.example.dietideals.data.network.NetworkApiService
 
 interface AuctionsRepository {
     suspend fun getAuctions(): List<Auction>
+    suspend fun getAuctionById(id: Int): Auction
 }
 
 class NetworkAuctionsRepository(
@@ -12,6 +13,10 @@ class NetworkAuctionsRepository(
 ) : AuctionsRepository {
     override suspend fun getAuctions(): List<Auction> {
         return networkData.getAuctions()
+    }
+
+    override suspend fun getAuctionById(id: Int): Auction {
+        return networkData.getAuctionById(id)
     }
 
 }

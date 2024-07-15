@@ -11,6 +11,7 @@ import com.example.dietideals.DietiDealsApplication
 import com.example.dietideals.data.AppUiState
 import com.example.dietideals.data.repos.AuctionsRepository
 import com.example.dietideals.data.repos.StringsRepository
+import com.example.dietideals.data.repos.TagsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -26,7 +27,8 @@ sealed interface FetchState {
 
 class AppViewModel(
     private val stringsRepository: StringsRepository,
-    private val auctionsRepository: AuctionsRepository
+    private val auctionsRepository: AuctionsRepository,
+    private val tagsRepository: TagsRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AppUiState())
     val uiState: StateFlow<AppUiState> = _uiState.asStateFlow()
@@ -34,6 +36,18 @@ class AppViewModel(
 
     init {
         serverString()
+
+            viewModelScope.launch {
+                try {
+                    tagsRepository.getTags().map {
+                        Log.i("AppViewModel", "Tags: $it")
+                    }
+                } catch (e: IllegalArgumentException) {
+                    Log.e("AppViewModel", "Error: ${e.message}")
+                }
+            }
+
+
     }
 
     private fun serverString() {
@@ -53,6 +67,13 @@ class AppViewModel(
                         currentFetchState = FetchState.Error("Error: ${e.message}")
                     )
                 }
+                catch (e: Exception) {
+                    auctions = "Error"
+                    Log.e("AppViewModel", "Error: ${e.message}")
+                    currentState.copy(
+                        currentFetchState = FetchState.Error("Error: ${e.message}")
+                    )
+                }
             }
         }
     }
@@ -64,9 +85,11 @@ class AppViewModel(
                 val application = (this[APPLICATION_KEY] as DietiDealsApplication)
                 val stringsRepository = application.container.stringsRepository
                 val auctionsRepository = application.container.auctionsRepository
+                val tagsRepository = application.container.tagsRepository
                 AppViewModel(
                     stringsRepository = stringsRepository,
-                    auctionsRepository = auctionsRepository
+                    auctionsRepository = auctionsRepository,
+                    tagsRepository = tagsRepository
                 )
             }
         }

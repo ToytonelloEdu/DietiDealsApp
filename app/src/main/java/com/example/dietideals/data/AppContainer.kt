@@ -24,13 +24,13 @@ class RetrofitAppContainer : AppContainer {
     //"http://192.168.43.8:8080/api/1.0/"
     //"http://100.102.11.112:8080/api/1.0/"
     //"http://192.168.0.109:8080/api/1.0/"
-    //"http://192.168.0.105:8080/api/1.0/"
+    "http://192.168.0.105:8080/api/1.0/"
     //"http://192.168.0.101:8080/api/1.0/"
-    "http://192.168.42.82:8080/api/1.0/"
+    //"http://192.168.42.82:8080/api/1.0/"
 
     private val retrofit = Retrofit.Builder()
         .addConverterFactory(
-            Json.asConverterFactory("application/json".toMediaType())
+            Json.asConverterFactory("application/json; charset=UTF8".toMediaType())
         )
         .baseUrl(baseUrl)
         .build()

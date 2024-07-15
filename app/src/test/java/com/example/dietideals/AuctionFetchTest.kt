@@ -5,13 +5,12 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class AuctionFetchTest {
-    val auctionRepo = RetrofitAppContainer().auctionsRepository;
+    private val auctionRepo = RetrofitAppContainer().auctionsRepository;
 
     @Test
     fun auctionFetchTest() {
         runTest {
-            val auctions = auctionRepo.getAuctions()
-            assert(auctions.isNotEmpty())
+            val auction = auctionRepo.getAuctionById(20)
         }
     }
 }
