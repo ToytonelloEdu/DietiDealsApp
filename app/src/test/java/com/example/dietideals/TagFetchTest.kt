@@ -12,7 +12,9 @@ class TagFetchTest {
     @Test
     fun fetchTags () {
         runTest {
-        tagsRepo.getTags().map { println(it.tagName) }
+        tagsRepo.getTags().forEach {
+            println(it.tagName)
+        }
         }
     }
 }

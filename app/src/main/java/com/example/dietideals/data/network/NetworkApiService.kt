@@ -1,8 +1,7 @@
 package com.example.dietideals.data.network
 
-import com.example.dietideals.data.entities.Net_Auction
-import com.example.dietideals.data.entities.Net_Tag
 import com.example.dietideals.ui.models.Auction
+import com.example.dietideals.ui.models.Tag
 import retrofit2.http.GET
 
 /**
@@ -15,9 +14,12 @@ interface NetworkApiService {
     suspend fun getString() : String
 
     @GET("auctions")
-    suspend fun getAuctions() : List<Net_Auction>
+    suspend fun getAuctions() : List<Auction>
+
+    @GET("auctions/{id}")
+    suspend fun getAuction(id: Int) : Auction
 
     @GET("tags")
-    suspend fun getTags() : List<Net_Tag>
+    suspend fun getTags() : List<Tag>
 
 }
