@@ -73,6 +73,8 @@ dependencies {
     implementation(libs.junit)
     implementation(libs.androidx.ui.text.google.fonts)
 
+    testImplementation(libs.kotlinx.coroutines.test)
+
     androidTestImplementation(platform(libs.androidx.compose.bom.v20240500))
     androidTestImplementation(libs.ui.test.junit4)
     androidTestImplementation(libs.androidx.navigation.testing)

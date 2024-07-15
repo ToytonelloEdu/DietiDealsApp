@@ -21,7 +21,7 @@ import com.example.dietideals.ui.theme.topAppBarColors
 @Composable
 fun AppTopBar(currentScreen: AppView ,modifier: Modifier = Modifier) {
     TopAppBar(
-        title = { Text(text = stringResource(id = R.string.app_name)) },
+        title = { Text(text = stringResource(id = currentScreen.title)) },
         colors = topAppBarColors()
     )
 }

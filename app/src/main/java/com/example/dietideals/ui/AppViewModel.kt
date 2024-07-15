@@ -1,38 +1,75 @@
 package com.example.dietideals.ui
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
+import com.example.dietideals.DietiDealsApplication
 import com.example.dietideals.data.AppUiState
-import com.example.dietideals.data.network.ServerAPI
+import com.example.dietideals.data.repos.AuctionsRepository
+import com.example.dietideals.data.repos.StringsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.IOException
-import java.security.cert.CertPathValidatorException
 
-class AppViewModel : ViewModel() {
+sealed interface FetchState {
+    data class HomeSuccess(val auctions: String) : FetchState
+    data object Loading : FetchState
+    data class Error(val message: String? = null) : FetchState
+}
+
+class AppViewModel(
+    private val stringsRepository: StringsRepository,
+    private val auctionsRepository: AuctionsRepository
+) : ViewModel() {
     private val _uiState = MutableStateFlow(AppUiState())
     val uiState: StateFlow<AppUiState> = _uiState.asStateFlow()
+
 
     init {
         serverString()
     }
 
     private fun serverString() {
-        var string: String
+        var auctions: String
         viewModelScope.launch {
-            string = try { ServerAPI.getString() }
-            catch (e: CertPathValidatorException) { println(e.message + " " + e.cause); "Error: ${e.cause}" }
-            catch (e: IOException) { println(e.message); "Error: ${e.message}" }
             _uiState.update { currentState ->
-                currentState.copy(
-                    serverString = string
+                try {
+                    auctions = stringsRepository.getString()
+                    currentState.copy(
+                        currentFetchState = FetchState.HomeSuccess(auctions)
+                    )
+                }
+                catch (e: IOException) {
+                    auctions = "Error"
+                    Log.e("AppViewModel", "Error: ${e.message}")
+                    currentState.copy(
+                        currentFetchState = FetchState.Error("Error: ${e.message}")
+                    )
+                }
+            }
+        }
+    }
+
+
+    companion object{
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val application = (this[APPLICATION_KEY] as DietiDealsApplication)
+                val stringsRepository = application.container.stringsRepository
+                val auctionsRepository = application.container.auctionsRepository
+                AppViewModel(
+                    stringsRepository = stringsRepository,
+                    auctionsRepository = auctionsRepository
                 )
             }
         }
-
     }
+
 }

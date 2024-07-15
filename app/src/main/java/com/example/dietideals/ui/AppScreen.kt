@@ -16,7 +16,10 @@ import androidx.navigation.compose.rememberNavController
 import com.example.dietideals.R
 import com.example.dietideals.ui.components.AppBottomBar
 import com.example.dietideals.ui.components.AppTopBar
+import com.example.dietideals.ui.views.AucitonView
+import com.example.dietideals.ui.views.BidsView
 import com.example.dietideals.ui.views.HomeView
+import com.example.dietideals.ui.views.ProfileView
 
 enum class AppView (@StringRes val title: Int) {
     Home(R.string.app_name),
@@ -48,7 +51,22 @@ fun AppScreen(
         ) {
             composable(AppView.Home.name) {
                 HomeView(
-                    uiState.serverString
+                    uiState.currentFetchState
+                )
+            }
+            composable(AppView.Auctions.name) {
+                AucitonView(
+
+                )
+            }
+            composable(AppView.Bids.name) {
+                BidsView(
+
+                )
+            }
+            composable(AppView.Profile.name) {
+                ProfileView(
+
                 )
             }
         }
