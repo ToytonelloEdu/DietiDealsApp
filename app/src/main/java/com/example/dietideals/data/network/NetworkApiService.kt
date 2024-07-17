@@ -1,7 +1,7 @@
 package com.example.dietideals.data.network
 
-import com.example.dietideals.ui.models.Auction
-import com.example.dietideals.ui.models.Tag
+import com.example.dietideals.data.entities.NetAuction
+import com.example.dietideals.data.entities.NetTag
 import retrofit2.http.GET
 import retrofit2.http.Path
 
@@ -15,12 +15,12 @@ interface NetworkApiService {
     suspend fun getString() : String
 
     @GET("auctions")
-    suspend fun getAuctions() : List<Auction>
+    suspend fun getAuctions() : List<NetAuction>
 
     @GET("auctions/{id}")
-    suspend fun getAuctionById(@Path("id") id: Int) : Auction
+    suspend fun getAuctionById(@Path("id") id: Int) : NetAuction
 
     @GET("tags")
-    suspend fun getTags() : List<Tag>
+    suspend fun getTags() : List<NetTag>
 
 }
