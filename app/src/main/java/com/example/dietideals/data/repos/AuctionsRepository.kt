@@ -2,6 +2,8 @@ package com.example.dietideals.data.repos
 
 import com.example.dietideals.ui.models.Auction
 import com.example.dietideals.data.network.NetworkApiService
+import com.example.dietideals.ui.models.IncrementalAuction
+import com.example.dietideals.ui.models.SilentAuction
 
 interface AuctionsRepository {
     suspend fun getAuctions(): List<Auction>
@@ -13,12 +15,12 @@ class NetworkAuctionsRepository(
 ) : AuctionsRepository {
     override suspend fun getAuctions(): List<Auction> {
         return networkData.getAuctions().map {
-            Auction(it)
+                it.toAuction()
         }
     }
 
     override suspend fun getAuctionById(id: Int): Auction {
-        return Auction(networkData.getAuctionById(id))
+        return networkData.getAuctionById(id).toAuction()
     }
 
 }
