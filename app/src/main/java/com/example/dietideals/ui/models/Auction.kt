@@ -1,6 +1,5 @@
 package com.example.dietideals.ui.models
 
-import android.util.Log
 import com.example.dietideals.data.entities.NetAuction
 import java.sql.Timestamp
 
@@ -9,6 +8,8 @@ data class Auction(
     val picturePath: String? = null,
     val objectName: String,
     val description: String,
+    val auctioneer: Auctioneer? = null,
+    val auctioneerUsername: String? = null,
     val date: Timestamp,
     val bids: MutableList<Bid>,
     var lastBid: Bid? = bids.lastOrNull(),
@@ -20,6 +21,8 @@ data class Auction(
         netAuction.picturePath,
         netAuction.objectName,
         netAuction.description,
+        netAuction.auctioneer?.let { Auctioneer(it) },
+        netAuction.auctioneerUsername,
         Timestamp.valueOf(
             netAuction.date
             .replace("Z[UTC]", "")
