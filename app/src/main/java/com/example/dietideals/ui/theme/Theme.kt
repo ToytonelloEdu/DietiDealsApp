@@ -291,10 +291,11 @@ fun DietiDealsTheme(
   )
 }
 
+@Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun topAppBarColors() : TopAppBarColors {
     return TopAppBarColors(
-        containerColor = primaryLight,
+        containerColor = if (isSystemInDarkTheme()) onPrimaryDark else primaryLight,
         titleContentColor = Color.White,
         navigationIconContentColor = Color.White,
         actionIconContentColor = Color.White,
