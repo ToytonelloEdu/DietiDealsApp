@@ -10,5 +10,5 @@ interface TagsRepository {
 class NetworkTagsRepository(
     private val networkApi: NetworkApiService
 ) : TagsRepository {
-    override suspend fun getTags(): List<Tag> = networkApi.getTags()
+    override suspend fun getTags(): List<Tag> = networkApi.getTags().map { Tag(it) }
 }

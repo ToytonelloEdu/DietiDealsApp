@@ -12,11 +12,13 @@ class NetworkAuctionsRepository(
     private val networkData: NetworkApiService
 ) : AuctionsRepository {
     override suspend fun getAuctions(): List<Auction> {
-        return networkData.getAuctions()
+        return networkData.getAuctions().map {
+            Auction(it)
+        }
     }
 
     override suspend fun getAuctionById(id: Int): Auction {
-        return networkData.getAuctionById(id)
+        return Auction(networkData.getAuctionById(id))
     }
 
 }
