@@ -1,11 +1,12 @@
 package com.example.dietideals.ui.models
 
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
+import com.example.dietideals.data.entities.NetTag
 
-@Serializable
 data class Tag (
-    val id: String,
-    @SerialName(value = "tagname")
     val tagName: String,
-)
+) {
+    constructor(netTag: NetTag) : this(
+        netTag.tagName,
+    )
+
+}
