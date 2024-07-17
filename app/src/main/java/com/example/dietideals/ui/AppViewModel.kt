@@ -36,18 +36,16 @@ class AppViewModel(
 
     init {
         serverString()
-
-            viewModelScope.launch {
-                try {
-                    tagsRepository.getTags().map {
-                        Log.i("AppViewModel", "Tags: $it")
-                    }
-                } catch (e: IllegalArgumentException) {
-                    Log.e("AppViewModel", "Error: ${e.message}")
+        //TESTS
+        viewModelScope.launch {
+            try {
+                auctionsRepository.getAuctions().forEach {
+                    Log.i("AppViewModel", "Auction: $it")
                 }
+            } catch (e: IllegalArgumentException) {
+                Log.e("AppViewModel", "Error: ${e.message}")
             }
-
-
+        }
     }
 
     private fun serverString() {
