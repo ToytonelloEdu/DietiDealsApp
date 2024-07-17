@@ -12,8 +12,8 @@ data class Bid(
     val time: Timestamp? = null
 ) {
     constructor(netBid: NetBid) : this(
-        null,
-        null,
+        netBid.auction.let {if (it != null) Auction(it) else null},
+        netBid.buyer.let {if (it != null) Buyer(it) else null},
         netBid.bidder,
         netBid.amount,
         Timestamp.valueOf(
