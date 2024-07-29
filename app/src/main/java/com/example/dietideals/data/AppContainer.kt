@@ -1,20 +1,30 @@
 package com.example.dietideals.data
 
+import com.example.dietideals.R
 import com.example.dietideals.data.network.NetworkApiService
+import com.example.dietideals.data.persistence.AppDatabase
 import com.example.dietideals.data.repos.AuctionsRepository
+import com.example.dietideals.data.repos.AuthRepository
 import com.example.dietideals.data.repos.NetworkAuctionsRepository
+import com.example.dietideals.data.repos.NetworkAuthRepository
 import com.example.dietideals.data.repos.NetworkStringsRepository
 import com.example.dietideals.data.repos.NetworkTagsRepository
+import com.example.dietideals.data.repos.NetworkUsersRepository
+import com.example.dietideals.data.repos.OfflineAuctionsRepository
 import com.example.dietideals.data.repos.StringsRepository
 import com.example.dietideals.data.repos.TagsRepository
+import com.example.dietideals.data.repos.UsersRepository
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
+import android.content.Context
 
 interface AppContainer {
     val stringsRepository: StringsRepository
     val auctionsRepository: AuctionsRepository
+    val usersRepository: UsersRepository
+    val authRepository: AuthRepository
     val tagsRepository: TagsRepository
 }
 
@@ -24,7 +34,7 @@ class RetrofitAppContainer : AppContainer {
     //"http://192.168.43.8:8080/api/1.0/"
     //"http://100.102.11.112:8080/api/1.0/"
     //"http://192.168.0.109:8080/api/1.0/"
-    "http://192.168.0.105:8080/api/1.0/"
+        "http://192.168.0.105:8080/api/1.0/"
     //"http://192.168.0.101:8080/api/1.0/"
     //"http://192.168.42.82:8080/api/1.0/"
 
@@ -42,16 +52,43 @@ class RetrofitAppContainer : AppContainer {
     //Repositories
 
     override val stringsRepository: StringsRepository by lazy {
-        NetworkStringsRepository(retrofitService)
+        NetworkStringsRepository.getInstance(retrofitService)
     }
 
     override val auctionsRepository: AuctionsRepository by lazy {
         NetworkAuctionsRepository(retrofitService)
     }
 
+    override val usersRepository: UsersRepository by lazy {
+        NetworkUsersRepository(retrofitService)
+    }
+
+    override val authRepository: AuthRepository by lazy {
+        NetworkAuthRepository(retrofitService)
+    }
+
     override val tagsRepository: TagsRepository by lazy {
         NetworkTagsRepository(retrofitService)
     }
+}
 
+class RoomAppContainer(
+    context: Context
+): AppContainer{
+
+    private val database = AppDatabase.getDatabase(context)
+
+    override val stringsRepository: StringsRepository
+        get() = TODO("Not yet implemented")
+
+    override val auctionsRepository: AuctionsRepository by lazy{
+        OfflineAuctionsRepository(database.auctionDao())
+    }
+    override val usersRepository: UsersRepository
+        get() = TODO("Not yet implemented")
+    override val authRepository: AuthRepository
+        get() = TODO("Not yet implemented")
+    override val tagsRepository: TagsRepository
+        get() = TODO("Not yet implemented")
 
 }
