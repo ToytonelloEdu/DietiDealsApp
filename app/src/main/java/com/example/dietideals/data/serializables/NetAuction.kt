@@ -1,8 +1,8 @@
-package com.example.dietideals.data.entities
+package com.example.dietideals.data.serializables
 
-import com.example.dietideals.ui.models.Auction
-import com.example.dietideals.ui.models.IncrementalAuction
-import com.example.dietideals.ui.models.SilentAuction
+import com.example.dietideals.domain.models.Auction
+import com.example.dietideals.domain.models.IncrementalAuction
+import com.example.dietideals.domain.models.SilentAuction
 import kotlinx.serialization.Serializable
 
 @Serializable

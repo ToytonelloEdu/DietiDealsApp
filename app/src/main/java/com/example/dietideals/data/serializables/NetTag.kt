@@ -1,6 +1,5 @@
-package com.example.dietideals.data.entities
+package com.example.dietideals.data.serializables
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
