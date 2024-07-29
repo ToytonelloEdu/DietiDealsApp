@@ -1,7 +1,7 @@
 package com.example.dietideals.data.repos
 
 import com.example.dietideals.data.network.NetworkApiService
-import com.example.dietideals.ui.models.Tag
+import com.example.dietideals.domain.models.Tag
 
 interface TagsRepository {
     suspend fun getTags(): List<Tag>
