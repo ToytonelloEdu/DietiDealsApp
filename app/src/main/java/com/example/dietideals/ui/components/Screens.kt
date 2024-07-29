@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -24,7 +25,7 @@ fun LoadingView(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun NetworkErrorView(modifier: Modifier = Modifier) {
+fun NetworkErrorView(modifier: Modifier = Modifier, onRetry: () -> Unit = {}) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.Center,
@@ -36,5 +37,8 @@ fun NetworkErrorView(modifier: Modifier = Modifier) {
             modifier = Modifier.size(50.dp)
         )
         Text(text = stringResource(R.string.loading_failed), modifier = Modifier.padding(16.dp))
+        Button(onClick = { onRetry() }) {
+            Text(text = stringResource(R.string.retry))
+        }
     }
 }
