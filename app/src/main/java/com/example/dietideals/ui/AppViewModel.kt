@@ -10,83 +10,176 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.dietideals.DietiDealsApplication
 import com.example.dietideals.data.AppUiState
 import com.example.dietideals.data.repos.AuctionsRepository
-import com.example.dietideals.data.repos.StringsRepository
+import com.example.dietideals.data.repos.AuthRepository
 import com.example.dietideals.data.repos.TagsRepository
+import com.example.dietideals.data.repos.UsersRepository
+import com.example.dietideals.domain.AuthenticationUseCase
+import com.example.dietideals.domain.HomePageUseCase
+import com.example.dietideals.domain.ausiliary.NewUser
+import com.example.dietideals.domain.models.Auction
+import com.example.dietideals.domain.models.Auctioneer
+import com.example.dietideals.domain.models.Buyer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.io.IOException
+import retrofit2.HttpException
 
-sealed interface FetchState {
-    data class HomeSuccess(val auctions: String) : FetchState
-    data object Loading : FetchState
-    data class Error(val message: String? = null) : FetchState
-}
 
 class AppViewModel(
-    private val stringsRepository: StringsRepository,
+    private val homePageUseCase: HomePageUseCase,
+    private val authenticationUseCase: AuthenticationUseCase,
     private val auctionsRepository: AuctionsRepository,
+    private val offlineAuctionsRepository: AuctionsRepository,
+    private val usersRepository: UsersRepository,
+    private val authRepository: AuthRepository,
     private val tagsRepository: TagsRepository
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AppUiState())
     val uiState: StateFlow<AppUiState> = _uiState.asStateFlow()
 
+    private lateinit var auctions: List<Auction>
 
     init {
-        serverString()
+        serverHomepageAuctions()
+
         //TESTS
+
+        viewModelScope.launch {
+        try {
+        offlineAuctionsRepository.getAuctions().let {
+        Log.i("AppViewModel", "Response: $it")
+        }
+        } catch (e: Exception) {
+        Log.e("AppViewModel", "Error: ${e.message}")
+        }
+        }
+
+    }
+
+    private fun serverHomepageAuctions() {
+
+        viewModelScope.launch {
+            _uiState.update { currentState ->
+                try {
+                    auctions = auctionsRepository.getAuctions()
+                    currentState.copy(
+                        currentHomeState = HomeFetchState.HomeSuccess(auctions)
+                    )
+                }
+                catch (e: Exception) {
+                    auctions = emptyList()
+                    Log.e("AppViewModel", "Error: ${e.message}")
+                    currentState.copy(
+                        currentHomeState = HomeFetchState.Error("Error: ${e.message}")
+                    )
+                }
+            }
+        }
+    }
+
+    fun onAuctionClicked(passedAuction: Auction, isDirectBid: Boolean) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                currentAuctionState = AuctionFetchState.AuctionSuccess(passedAuction),
+            )
+        }
+        viewModelScope.launch {
+            _uiState.update { currentState ->
+                try {
+                    val auction = auctionsRepository.getAuctionById(passedAuction.id!!)
+                    currentState.copy(
+                        currentAuctionState = AuctionFetchState.AuctionSuccess(auction, auction.bids)
+                    )
+                } catch (e: Exception) {
+                    Log.e("AppViewModel", "Error: ${e.message}")
+                    currentState.copy(
+                        currentAuctionState = AuctionFetchState.Error("Error: ${e.message}")
+                    )
+                }
+            }
+        }
+    }
+
+    fun onLoginClicked(handle: String, password: String) {
         viewModelScope.launch {
             try {
-                auctionsRepository.getAuctions().forEach {
-                    Log.i("AppViewModel", "Auction: $it")
+                authRepository.auth(handle, password).let {
+                        updateUserStateByHandle(handle)
+                        Log.i("AppViewModel", "Response: $it")
                 }
-            } catch (e: IllegalArgumentException) {
+            } catch (e: HttpException) {
+                Log.e("AppViewModel", "Error: ${e.message}")
+                if(e.code() == 401) {
+                    _uiState.update { currentState ->
+                        currentState.copy(
+                            userState = UserState.NotLoggedIn(true)
+                        )
+                    }
+                }
+            } catch (e: Exception) {
                 Log.e("AppViewModel", "Error: ${e.message}")
             }
         }
     }
 
-    private fun serverString() {
-        var auctions: String
-        viewModelScope.launch {
-            _uiState.update { currentState ->
-                try {
-                    auctions = stringsRepository.getString()
-                    currentState.copy(
-                        currentFetchState = FetchState.HomeSuccess(auctions)
-                    )
-                }
-                catch (e: IOException) {
-                    auctions = "Error"
-                    Log.e("AppViewModel", "Error: ${e.message}")
-                    currentState.copy(
-                        currentFetchState = FetchState.Error("Error: ${e.message}")
-                    )
-                }
-                catch (e: Exception) {
-                    auctions = "Error"
-                    Log.e("AppViewModel", "Error: ${e.message}")
-                    currentState.copy(
-                        currentFetchState = FetchState.Error("Error: ${e.message}")
-                    )
+    private suspend fun updateUserStateByHandle(handle: String) {
+        val user = usersRepository.getUserByHandle(handle).let { netUser ->
+            when (netUser.userType) {
+                "Auctioneer" -> Auctioneer(netUser)
+                "Buyer" -> Buyer(netUser)
+                else -> throw IllegalArgumentException("User type not found")
+            }
+        }
+        when (user) {
+            is Auctioneer -> {
+                _uiState.update { currentState ->
+                    currentState.copy(userState = UserState.Vendor(user))
                 }
             }
+            is Buyer -> {
+                _uiState.update { currentState ->
+                    currentState.copy(userState = UserState.Bidder(user))
+                }
+            }
+            else -> throw IllegalArgumentException("User type not found")
         }
     }
 
+    fun onSignUpFormChanged(newUser: NewUser) {
+        _uiState.update { currentState ->
+            currentState.copy(
+                signUpState = SignUpState.Initial(newUser)
+            )
+        }
+    }
+
+    fun retryHomePageLoading() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                currentHomeState = HomeFetchState.Loading
+            )
+        }
+        serverHomepageAuctions()
+    }
 
     companion object{
         val Factory: ViewModelProvider.Factory = viewModelFactory {
             initializer {
                 val application = (this[APPLICATION_KEY] as DietiDealsApplication)
-                val stringsRepository = application.container.stringsRepository
                 val auctionsRepository = application.container.auctionsRepository
+                val offlineAuctionsRepository = application.offlineContainer.auctionsRepository
+                val usersRepository = application.container.usersRepository
+                val authRepository = application.container.authRepository
                 val tagsRepository = application.container.tagsRepository
                 AppViewModel(
-                    stringsRepository = stringsRepository,
+                    homePageUseCase = HomePageUseCase(auctionsRepository, offlineAuctionsRepository),
+                    authenticationUseCase = AuthenticationUseCase(authRepository, usersRepository),
                     auctionsRepository = auctionsRepository,
+                    offlineAuctionsRepository = offlineAuctionsRepository,
+                    usersRepository = usersRepository,
+                    authRepository = authRepository,
                     tagsRepository = tagsRepository
                 )
             }
