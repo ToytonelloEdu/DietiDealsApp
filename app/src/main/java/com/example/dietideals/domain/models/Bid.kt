@@ -1,15 +1,15 @@
-package com.example.dietideals.ui.models
+package com.example.dietideals.domain.models
 
-import com.example.dietideals.data.entities.NetAuction
-import com.example.dietideals.data.entities.NetBid
+import com.example.dietideals.data.serializables.NetBid
 import java.sql.Timestamp
+import java.util.Date
 
 data class Bid(
     val auction: Auction? = null,
     val buyer: Buyer? = null,
     val bidder: String? = null,
     val amount: Double,
-    val time: Timestamp? = null
+    val time: Timestamp
 ) {
     constructor(netBid: NetBid) : this(
         netBid.auction.let { it?.toAuction() },
@@ -23,4 +23,8 @@ data class Bid(
                 ?: "2000-01-01 00:00:00"
         )
     )
+
+    fun timeToDate() : Date {
+        return Date.from(time.toInstant())
+    }
 }
