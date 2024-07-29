@@ -15,7 +15,7 @@ import com.example.dietideals.data.repos.TagsRepository
 import com.example.dietideals.data.repos.UsersRepository
 import com.example.dietideals.domain.AuthenticationUseCase
 import com.example.dietideals.domain.HomePageUseCase
-import com.example.dietideals.domain.ausiliary.NewUser
+import com.example.dietideals.domain.auxiliary.NewUser
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.Auctioneer
 import com.example.dietideals.domain.models.Buyer

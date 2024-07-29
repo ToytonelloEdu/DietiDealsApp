@@ -38,7 +38,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.dietideals.domain.ausiliary.NewUser
+import com.example.dietideals.domain.auxiliary.NewUser
 import com.example.dietideals.ui.components.CalendarIcon
 import com.example.dietideals.ui.components.CancelButton
 import com.example.dietideals.ui.components.ConfirmButton

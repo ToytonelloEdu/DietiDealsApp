@@ -48,14 +48,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dietideals.R
-import com.example.dietideals.domain.ausiliary.Gender
+import com.example.dietideals.domain.auxiliary.Gender
 import com.example.dietideals.ui.UserState
 import com.example.dietideals.ui.AppView
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.IncrementalAuction
 import com.example.dietideals.domain.models.SilentAuction
-import com.example.dietideals.domain.ausiliary.Seconds
-import com.example.dietideals.domain.ausiliary.UserType
+import com.example.dietideals.domain.auxiliary.Seconds
+import com.example.dietideals.domain.auxiliary.UserType
 import com.example.dietideals.domain.models.Buyer
 import java.text.NumberFormat
 

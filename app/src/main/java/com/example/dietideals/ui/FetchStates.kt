@@ -1,6 +1,6 @@
 package com.example.dietideals.ui
 
-import com.example.dietideals.domain.ausiliary.NewUser
+import com.example.dietideals.domain.auxiliary.NewUser
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.Auctioneer
 import com.example.dietideals.domain.models.Bid
