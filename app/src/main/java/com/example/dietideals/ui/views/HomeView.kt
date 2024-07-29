@@ -3,43 +3,65 @@ package com.example.dietideals.ui.views
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.dietideals.ui.FetchState
+import com.example.dietideals.ui.HomeFetchState
+import com.example.dietideals.ui.components.HomeAuctionCard
 import com.example.dietideals.ui.components.LoadingView
 import com.example.dietideals.ui.components.NetworkErrorView
+import com.example.dietideals.domain.models.Auction
 
 @Composable
 fun HomeView(
-    fetchState: FetchState,
+    fetchState: HomeFetchState,
+    onAuctionClicked: (Auction, Boolean) -> Unit,
+    onRetry: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     when (fetchState) {
-        is FetchState.Loading -> LoadingView(modifier.fillMaxSize())
-        is FetchState.HomeSuccess -> SuccessHomeView(fetchState, modifier)
-        is FetchState.Error -> NetworkErrorView(modifier.fillMaxSize())
+        is HomeFetchState.HomeSuccess -> SuccessHomeView(fetchState, onAuctionClicked, modifier)
+        is HomeFetchState.Error -> NetworkErrorView(modifier.fillMaxSize(), onRetry)
+        else -> LoadingView(modifier.fillMaxSize())
     }
 
 }
 
 @Composable
-private fun SuccessHomeView(successState: FetchState.HomeSuccess, modifier: Modifier = Modifier) {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.fillMaxSize()
-    ) {
-        Text(
-            text = successState.auctions.toString()
-        )
+private fun SuccessHomeView(
+    successState: HomeFetchState.HomeSuccess,
+    onAuctionClicked: (Auction, Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (successState.auctions.isEmpty()) {
+        Column(
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = modifier.fillMaxSize()
+        ) {
+            Text(text = "No auctions created", modifier = Modifier)
+        }
+    } else {
+        LazyColumn(
+            verticalArrangement = Arrangement.Top,
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = modifier.fillMaxSize()
+        ) {
+            val auctions = successState.auctions
+            items(auctions.size) { index ->
+                if (! auctions[index].hasBeenOverFor(3))
+                    HomeAuctionCard(successState.auctions[index], onAuctionClicked)
+            }
+        }
     }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun HomeViewPreview() {
-        HomeView(FetchState.HomeSuccess(auctions = "emptyList"))
+        HomeView(HomeFetchState.HomeSuccess(auctions = emptyList()), { _, _ -> }, {})
 }
