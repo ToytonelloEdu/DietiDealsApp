@@ -60,6 +60,32 @@ fun AuctioneerIconText(
     }
 }
 
+@Composable
+fun AuctioneerIconText(
+    auctioneer: String,
+    primaryColor: Color,
+    modifier: Modifier = Modifier,
+    underlineLength: Dp = 160.dp,
+    underlineDistance: Dp = 2.dp,
+) {
+    Column(
+        horizontalAlignment = Alignment.Start,
+        verticalArrangement = Arrangement.Center,
+        modifier = modifier
+    ) {
+        Row {
+            AuctioneerIcon(primaryColor)
+            Text(
+                text = auctioneer,
+                modifier = Modifier.padding(start = 8.dp),
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+        UnderLine(primaryColor, length =  underlineLength, distance = underlineDistance)
+    }
+}
+
 
 @Composable
 fun BidderIconText(
@@ -160,14 +186,7 @@ fun TimerIconText(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceAround
         ) {
-            Icon(
-                painter = painterResource(R.drawable.timer_ic),
-                contentDescription = "remaining time",
-                tint = primaryColor,
-                modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .size(18.dp)
-            )
+            TimerIcon(primaryColor)
             Text(
                 text = "${auction.calculateRemainingTime()}",
                 fontSize = 15.sp
@@ -176,7 +195,6 @@ fun TimerIconText(
         UnderLine(primaryColor, underlineWidth , 0.75.dp, underlineDistance)
     }
 }
-
 
 
 @Composable
@@ -230,6 +248,38 @@ fun CalendarIconText(
             )
             Text(
                 text = auction.expirationDateToDate().toFormattedDateTime(),
+                color = MaterialTheme.colorScheme.onPrimaryContainer,
+                fontSize = fontSize
+            )
+        }
+        UnderLine(primaryColor, underlineLength , 0.75.dp, 4.dp)
+    }
+}
+
+@Composable
+fun CalendarIconText(
+    date: Date,
+    primaryColor: Color,
+    modifier: Modifier = Modifier,
+    underlineLength: Dp = 125.dp,
+    fontSize: TextUnit = 14.sp,
+) {
+    Column (
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.Start,
+        modifier = modifier
+    ){
+        Row (
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround
+        ) {
+            CalendarIcon(
+                primaryColor, Modifier
+                    .padding(horizontal = 4.dp)
+                    .size(18.dp)
+            )
+            Text(
+                text = date.toFormattedDate(),
                 color = MaterialTheme.colorScheme.onPrimaryContainer,
                 fontSize = fontSize
             )

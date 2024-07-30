@@ -4,6 +4,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -232,5 +233,27 @@ fun PreviousIcon(primaryColor: Color, modifier: Modifier = Modifier) {
         contentDescription = "previous",
         tint = primaryColor,
         modifier = modifier.size(22.dp)
+    )
+}
+
+@Composable
+fun MoneyPlusIcon(modifier: Modifier = Modifier, primaryColor: Color = MaterialTheme.colorScheme.primary) {
+    Icon(
+        painter = painterResource(id = R.drawable.moneyplus_ic),
+        contentDescription = null,
+        tint = primaryColor,
+        modifier = modifier.padding(start = 8.dp)
+    )
+}
+
+@Composable
+fun TimerIcon(primaryColor: Color) {
+    Icon(
+        painter = painterResource(R.drawable.timer_ic),
+        contentDescription = "remaining time",
+        tint = primaryColor,
+        modifier = Modifier
+            .padding(horizontal = 8.dp)
+            .size(18.dp)
     )
 }

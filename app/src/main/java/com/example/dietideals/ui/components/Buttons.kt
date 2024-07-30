@@ -62,7 +62,7 @@ import java.text.NumberFormat
 
 internal val routesByButton = mapOf(
     "Home" to listOf(AppView.Home, AppView.AuctionDetails),
-    "Gavel" to listOf(AppView.Auctions, AppView.Bids, AppView.MyAuctionDetails, AppView.MyBidAuctionDetails),
+    "Gavel" to listOf(AppView.Auctions, AppView.Bids, AppView.MyAuctionDetails, AppView.MyBidAuctionDetails, AppView.NewAuction),
     "User" to listOf(AppView.Profile, AppView.LogIn, AppView.SignUp)
 )
 
@@ -182,12 +182,7 @@ fun BidIconButton(
             horizontalArrangement = Arrangement.SpaceAround,
             modifier = Modifier.padding(start = 8.dp)
         ) {
-            Icon(
-                painter = painterResource(id = R.drawable.moneyplus_ic),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.padding(start = 8.dp)
-            )
+            MoneyPlusIcon()
             Text(
                 text = NumberFormat.getCurrencyInstance().format(auction.raisingThreshold),
                 color = MaterialTheme.colorScheme.onPrimary,
