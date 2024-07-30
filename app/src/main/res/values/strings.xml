@@ -15,4 +15,5 @@
     <string name="restapi_url">http://192.168.0.105:8080/api/1.0/</string>
     <string name="my_auction_details">My Auction Details</string>
     <string name="my_bid_auction_details">My Bid Auction Details</string>
+    <string name="new_auction">New Auction</string>
 </resources>
