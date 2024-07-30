@@ -35,6 +35,7 @@ import com.example.dietideals.ui.views.BidsView
 import com.example.dietideals.ui.views.HomeView
 import com.example.dietideals.ui.views.LogInView
 import com.example.dietideals.ui.views.MyAuctionDetailsView
+import com.example.dietideals.ui.views.NewAuctionView
 import com.example.dietideals.ui.views.ProfileView
 import com.example.dietideals.ui.views.SignUpView
 
@@ -47,6 +48,7 @@ enum class AppView (@StringRes val title: Int) {
     MyAuctionDetails(R.string.my_auction_details),
     MyBidAuctionDetails(R.string.my_bid_auction_details),
     UserDetails(R.string.user_details),
+    NewAuction(R.string.new_auction),
     LogIn(R.string.log_in),
     SignUp(R.string.sign_up)
 }
@@ -106,7 +108,7 @@ fun AppScreen(
                     }
                     AppView.Auctions -> {
                         FloatingActionButton(
-                            onClick = { /*TODO*/ },
+                            onClick = { navController.navigate(AppView.NewAuction.name) },
                             containerColor = MaterialTheme.colorScheme.primary
                         ) {
                             Icon(
@@ -227,11 +229,27 @@ fun AppScreen(
             }
             composable(AppView.SignUp.name) {
                 val newUser = uiState.signUpState.newUser;
+                val formInvalid = (uiState.signUpState as? SignUpState.Initial)?.formInvalid ?: false
                 SignUpView(
-                    newUser,
-                    onSignupClick = { },
+                    newUser = newUser,
+                    onValueChange = { passedUser -> viewModel.onSignUpFormChanged(passedUser) },
+                    formInvalid = formInvalid,
                     onCancelClick = { navController.navigate(AppView.LogIn.name) },
-                    onValueChange = { passedUser -> viewModel.onSignUpFormChanged(passedUser) }
+                    onSignupClick = { }
+                )
+            }
+            composable(AppView.UserDetails.name) {
+
+            }
+            composable(AppView.NewAuction.name) {
+                val newAuction = uiState.newAuctionState.newAuction
+                val formInvalid = (uiState.newAuctionState as? NewAuctionState.Initial)?.formInvalid ?: false
+                NewAuctionView(
+                    newAuction = newAuction,
+                    onValueChange = { passedAuction -> viewModel.onNewAuctionFormChanged(passedAuction) },
+                    formInvalid = formInvalid,
+                    onCancelClick = { navController.navigate(AppView.Auctions.name) },
+                    onConfirmClick = { }
                 )
             }
         }
