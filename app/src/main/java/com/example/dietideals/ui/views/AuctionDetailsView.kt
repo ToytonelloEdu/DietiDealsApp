@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,12 +17,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -40,8 +44,11 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.example.dietideals.R
 import com.example.dietideals.data.serializables.NetAuction
 import com.example.dietideals.domain.models.Auction
@@ -64,6 +71,7 @@ import com.example.dietideals.ui.components.TimerIconText
 import com.example.dietideals.ui.components.UnderLine
 import com.example.dietideals.ui.theme.primaryLight
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuctionDetailsView(
     currentState: AuctionFetchState,
@@ -88,6 +96,38 @@ fun AuctionDetailsView(
                 if(auction is IncrementalAuction) {
                     var showBids by rememberSaveable { mutableStateOf(false) }
                     ShowBidsButton(showBids, { showBids = !showBids }, Modifier)
+                    if (showBids) {
+                        ModalBottomSheet(
+                            onDismissRequest = { showBids = false },
+                            modifier = Modifier.fillMaxHeight()
+                        ) {
+                            Text(
+                                text = "Offers history:",
+                                fontWeight = FontWeight.ExtraBold,
+                                fontSize = 18.sp,
+                                color = primaryColor,
+                                textAlign = TextAlign.Start,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(8.dp)
+                            )
+                            LazyColumn(
+                                modifier = Modifier.fillMaxWidth().padding(8.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Top
+                            ) {
+                                items(auction.bids.size) {
+                                    val reverseIndex = (auction.bids.size - 1) - it
+                                    IncrementalBidPill(
+                                        auction,
+                                        auction.bids[reverseIndex],
+                                        it,
+                                        primaryColor = primaryColor
+                                    )
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -97,7 +137,9 @@ fun AuctionDetailsView(
 @Composable
 fun ShowBidsButton(showBids: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Row (
-        modifier = modifier.padding(8.dp).clickable { onClick() },
+        modifier = modifier
+            .padding(8.dp)
+            .clickable { onClick() },
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -412,19 +454,26 @@ fun AuctionTagsGrid(tags: List<Tag>, primaryColor: Color, modifier: Modifier = M
 }
 
 @Composable
-fun TagsIconLabel(primaryColor: Color, modifier: Modifier = Modifier) {
+fun TagsIconLabel(
+    primaryColor: Color,
+    modifier: Modifier = Modifier,
+    fontSize: TextUnit = 18.sp,
+    iconSize: Dp = 16.dp,
+    textAlign: TextAlign = TextAlign.Center,
+) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        TagIcon(primaryColor, Modifier.size(16.dp))
+        TagIcon(primaryColor, Modifier.size(iconSize))
         Text(
             text = "Tags:",
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier.padding(horizontal = 8.dp),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold
+            fontSize = fontSize,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = textAlign
         )
     }
 }

@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
@@ -71,7 +72,13 @@ fun MyAuctionDetailsView(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(text = "Offers:")
+                    Text(
+                        text = "Offers:",
+                        color = primaryColor,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        modifier = Modifier.padding(horizontal = 4.dp)
+                    )
                     if (auction is SilentAuction) {
                         CalendarIconText(
                             auction = auction,
@@ -96,6 +103,7 @@ fun MyAuctionInteractionCard(
 ) {
     Box(
         modifier = modifier
+            .fillMaxWidth()
             .height(250.dp)
             .border(1.dp, primaryColor, RoundedCornerShape(3.dp))
             .clip(RoundedCornerShape(3.dp))
