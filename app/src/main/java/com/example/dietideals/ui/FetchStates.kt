@@ -1,5 +1,6 @@
 package com.example.dietideals.ui
 
+import com.example.dietideals.domain.auxiliary.NewAuction
 import com.example.dietideals.domain.auxiliary.NewUser
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.Auctioneer
@@ -29,4 +30,10 @@ sealed class SignUpState (val newUser: NewUser) {
     class Initial(newUser: NewUser, val formInvalid: Boolean = false) : SignUpState(newUser)
     class Loading(newUser: NewUser) : SignUpState(newUser)
     class Error(newUser: NewUser, val message: String? = null) : SignUpState(newUser)
+}
+
+sealed class NewAuctionState(val newAuction: NewAuction) {
+    class Initial(newAuction: NewAuction, val formInvalid: Boolean = false) : NewAuctionState(newAuction)
+    class Loading(newAuction: NewAuction) : NewAuctionState(newAuction)
+    class Error(newAuction: NewAuction, val message: String? = null) : NewAuctionState(newAuction)
 }
