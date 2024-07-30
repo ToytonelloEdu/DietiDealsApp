@@ -4,10 +4,15 @@ import com.example.dietideals.data.serializables.NetAuction
 import com.example.dietideals.data.serializables.NetAuth
 import com.example.dietideals.data.serializables.NetTag
 import com.example.dietideals.data.serializables.NetUser
+import okhttp3.MultipartBody
+import okhttp3.ResponseBody
+import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Headers
+import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 
 /**
@@ -44,5 +49,10 @@ interface NetworkApiService {
     //tags
     @GET("tags")
     suspend fun getTags() : List<NetTag>
+
+    //images
+    @Multipart
+    @POST("photos/{name}/profile")
+    suspend fun uploadProfileImage(@Path("name") name: String, @Part image: MultipartBody.Part) : Call<ResponseBody>
 
 }
