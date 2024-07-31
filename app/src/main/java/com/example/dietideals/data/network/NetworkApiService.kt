@@ -9,6 +9,7 @@ import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.Headers
 import retrofit2.http.Multipart
 import retrofit2.http.POST
@@ -32,8 +33,7 @@ interface NetworkApiService {
     suspend fun getAuctionById(@Path("id") id: Int) : NetAuction
 
     @POST("auctions")
-    @Headers("Bearer : \$token")
-    suspend fun postAuction(@Body auction: NetAuction) : NetAuction
+    suspend fun postAuction(@Header("Bearer") token: String, @Body auction: NetAuction) : NetAuction
 
     //users
     @GET("users/{handle}")
