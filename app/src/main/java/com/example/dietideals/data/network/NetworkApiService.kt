@@ -2,15 +2,15 @@ package com.example.dietideals.data.network
 
 import com.example.dietideals.data.serializables.NetAuction
 import com.example.dietideals.data.serializables.NetAuth
+import com.example.dietideals.data.serializables.NetBid
 import com.example.dietideals.data.serializables.NetTag
 import com.example.dietideals.data.serializables.NetUser
 import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import okhttp3.ResponseBody
-import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
-import retrofit2.http.Headers
 import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
@@ -25,7 +25,7 @@ interface NetworkApiService {
     @GET("myresource")
     suspend fun getString() : String
 
-    //auctions
+    //AUCTIONS
     @GET("auctions")
     suspend fun getAuctions() : List<NetAuction>
 
@@ -35,24 +35,48 @@ interface NetworkApiService {
     @POST("auctions")
     suspend fun postAuction(@Header("Bearer") token: String, @Body auction: NetAuction) : NetAuction
 
-    //users
+    @GET("users/{handle}/auctions")
+    suspend fun getAuctionsByUser(@Path("handle") handle: String) : List<NetAuction>
+
+    //USERS
     @GET("users/{handle}")
     suspend fun getUserByHandle(@Path("handle") handle: String) : NetUser
 
-    //auth
+    //AUTH
     @POST("auth")
     suspend fun restLogin(@Body auth: NetAuth) : String //JWT Token
 
     @POST("signup")
     suspend fun restSignup(@Body user: NetUser) : NetUser
 
-    //tags
+    //TAGS
     @GET("tags")
     suspend fun getTags() : List<NetTag>
 
-    //images
+    //BIDS
+    @GET("users/{handle}/bids")
+    suspend fun getBidsByUser(@Path("handle") handle: String) : List<NetBid>
+
+    @POST("bids")
+    suspend fun postBid(@Header("Bearer") token: String, @Body bid: NetBid) : NetBid
+
+
+    //IMAGES
     @Multipart
     @POST("photos/{name}/profile")
-    suspend fun uploadProfileImage(@Path("name") name: String, @Part image: MultipartBody.Part) : Call<ResponseBody>
+    suspend fun uploadProfileImage(
+        @Path("name") name: String,
+        @Part image: MultipartBody.Part,
+        @Part("details") details: RequestBody
+    ) : ResponseBody
+
+    @Multipart
+    @POST("photos/auctions/{id}/photo/{index}")
+    suspend fun uploadAuctionImage(
+        @Path("id") id: Int,
+        @Path("index") index: Int,
+        @Part image: MultipartBody.Part,
+        @Part("details") details: RequestBody
+    ) : ResponseBody
 
 }
