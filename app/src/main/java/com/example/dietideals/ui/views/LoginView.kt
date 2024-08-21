@@ -51,7 +51,7 @@ fun InAppLogin(wrongCredentials: Boolean, onLoginClick: (String, String) -> Unit
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
     Column (
         modifier = modifier
-            .padding(48.dp)
+            .fillMaxWidth(0.75f)
             .wrapContentWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -82,7 +82,9 @@ fun InAppLogin(wrongCredentials: Boolean, onLoginClick: (String, String) -> Unit
                 {handleValue = it},
                 wrongCredentials,
                 "Wrong credentials",
-                modifier = Modifier.padding(vertical = 8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
             )
             PasswordTextField(
                 "Password",
@@ -92,7 +94,7 @@ fun InAppLogin(wrongCredentials: Boolean, onLoginClick: (String, String) -> Unit
                 { passwordVisible = !passwordVisible},
                 wrongCredentials,
                 "Wrong credentials",
-
+                modifier = Modifier.fillMaxWidth()
             )
         }
         Row (
@@ -119,5 +121,5 @@ fun ThirdPartyLogin() {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun LogInViewPreview() {
-    LogInView(onLoginClick = { _, _ ->}, onSignupClick = {}, loginState = UserState.NotLoggedIn(true))
+    LogInView(onLoginClick = { _, _ ->}, onSignupClick = {}, loginState = UserState.NotLoggedIn(false))
 }
