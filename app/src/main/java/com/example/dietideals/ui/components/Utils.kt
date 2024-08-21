@@ -1,5 +1,10 @@
 package com.example.dietideals.ui.components
 
+import android.content.Context
+import android.net.Uri
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,6 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.example.dietideals.domain.auxiliary.NewAuction
+import java.io.File
 import java.util.Date
 
 
@@ -65,4 +72,44 @@ fun UnderLine(primaryColor: Color, modifier: Modifier = Modifier, thickness: Dp 
             .fillMaxWidth()
             .background(color = primaryColor)
     )
+}
+
+fun Context.createImageFile(): File {
+    val timeStamp = Date()
+    val imageFileName = "JPEG_" + timeStamp + "_"
+    val image = File.createTempFile(
+        imageFileName,
+        ".jpg",
+        externalCacheDir
+    )
+    return image
+}
+
+@Composable
+fun getCameraLauncher(
+    newAuction: NewAuction,
+    uriForIntent: Uri,
+    onValueChange: (NewAuction) -> Unit,
+) = rememberLauncherForActivityResult(
+    contract = ActivityResultContracts.TakePicture()
+) {
+    if (it) {
+        newAuction.picturePaths.add(uriForIntent)
+        onValueChange(newAuction)
+    } else {
+        Log.d("Camera", "Picture not saved")
+    }
+}
+
+@Composable
+fun getGalleryLauncher(
+    newAuction: NewAuction,
+    onValueChange: (NewAuction) -> Unit,
+) = rememberLauncherForActivityResult(
+    contract = ActivityResultContracts.PickVisualMedia()
+) { uri: Uri? ->
+    if (uri != null) {
+        newAuction.picturePaths.add(uri)
+        onValueChange(newAuction)
+    }
 }

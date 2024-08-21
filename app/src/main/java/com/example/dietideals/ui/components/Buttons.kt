@@ -63,7 +63,7 @@ import java.text.NumberFormat
 internal val routesByButton = mapOf(
     "Home" to listOf(AppView.Home, AppView.AuctionDetails),
     "Gavel" to listOf(AppView.Auctions, AppView.Bids, AppView.MyAuctionDetails, AppView.MyBidAuctionDetails, AppView.NewAuction),
-    "User" to listOf(AppView.Profile, AppView.LogIn, AppView.SignUp)
+    "NetUser" to listOf(AppView.Profile, AppView.LogIn, AppView.SignUp)
 )
 
 
@@ -117,7 +117,7 @@ fun UserButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    val isSelected = (routesByButton["User"]?.contains(currentView) == true)
+    val isSelected = (routesByButton["NetUser"]?.contains(currentView) == true)
     Button(
         onClick = { onClick() },
         colors = buttonColors().copy(
@@ -140,15 +140,17 @@ fun ButtonsPreview() {
             currentView = AppView.Home,
             UserState.Bidder(
                 Buyer(
-                    "ciro",
-                    "john.mckinley@examplepetstore.com",
-                    "1234567890",
-                    "Ciro",
-                    "Anastasio",
-                    "ciroanastasio.jpg",
-                    "FNS",
-                    "Ita",
-                    emptyList()
+                    username = "ciro",
+                    email = "john.mckinley@examplepetstore.com",
+                    password = "1234567890",
+                    firstName = "Ciro",
+                    lastName = "Anastasio",
+                    proPicPath = "ciroanastasio.jpg",
+                    bio = "FNS",
+                    nationality = "Ita",
+                    gender = "Male",
+                    birthdate = null,
+                    bids = emptyList()
                 )
             )
         ) {}
@@ -168,12 +170,12 @@ fun BidIconButton(
 ) {
     Row(
         modifier = modifier
-            .shadow(2.dp, RoundedCornerShape(3.dp))
             .wrapContentWidth()
-            .defaultMinSize(100.dp, 45.dp)
-            .background(primaryColor.let{ if (auction.isAuctionOver()) it.darken(0.4f) else it })
+            .shadow(2.dp, RoundedCornerShape(3.dp))
+            .defaultMinSize(minHeight = 45.dp)
+            .background(primaryColor.let { if (auction.isAuctionOver()) it.darken(0.4f) else it })
             .clip(RoundedCornerShape(3.dp))
-            .clickable (enabled = !auction.isAuctionOver()) { onAuctionClicked(auction, true) },
+            .clickable(enabled = !auction.isAuctionOver()) { onAuctionClicked(auction, true) },
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceAround
     ) {
@@ -182,7 +184,7 @@ fun BidIconButton(
             horizontalArrangement = Arrangement.SpaceAround,
             modifier = Modifier.padding(start = 8.dp)
         ) {
-            MoneyPlusIcon()
+            MoneyPlusIcon(primaryColor = Color.White)
             Text(
                 text = NumberFormat.getCurrencyInstance().format(auction.raisingThreshold),
                 color = MaterialTheme.colorScheme.onPrimary,
@@ -229,11 +231,12 @@ fun BidIconButton(
 ) {
     Row(
         modifier = modifier
+            .wrapContentWidth()
             .shadow(2.dp, RoundedCornerShape(3.dp))
             .size(160.dp, 45.dp)
-            .background(primaryColor.let{ if (auction.isAuctionOver()) it.darken(0.4f) else it })
+            .background(primaryColor.let { if (auction.isAuctionOver()) it.darken(0.4f) else it })
             .border(0.dp, Color.Transparent, RoundedCornerShape(3.dp))
-            .clickable (enabled = !auction.isAuctionOver()) { onAuctionClicked(auction, true) }
+            .clickable(enabled = !auction.isAuctionOver()) { onAuctionClicked(auction, true) }
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceAround
@@ -253,15 +256,20 @@ fun SubmitButton(
     primaryColor: Color,
     offerInput: String,
     modifier: Modifier = Modifier,
-    onSubmit: (Int) -> Unit
+    onSubmit: (Auction, Double) -> Unit
 ) {
     Row(
         modifier = modifier
             .shadow(2.dp, RoundedCornerShape(3.dp))
             .size(100.dp, 45.dp)
-            .background(primaryColor.let{ if (auction.isAuctionOver()) it.darken(0.4f) else it })
+            .background(primaryColor.let { if (auction.isAuctionOver()) it.darken(0.4f) else it })
             .border(0.dp, Color.Transparent, RoundedCornerShape(3.dp))
-            .clickable(enabled = !auction.isAuctionOver()) { onSubmit(offerInput.toIntOrNull() ?: -1) }
+            .clickable(enabled = !auction.isAuctionOver()) {
+                onSubmit(
+                    auction,
+                    offerInput.toDoubleOrNull() ?: -1.0
+                )
+            }
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceAround
@@ -353,9 +361,7 @@ fun GenderSelector(
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 56.dp),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -395,13 +401,11 @@ fun UserTypeSelector(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 56.dp),
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("User type:", Modifier.fillMaxWidth())
+        Text("NetUser type:", Modifier.fillMaxWidth())
         var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
         val options = listOf(UserType.Auctioneer, UserType.Buyer)
         SingleChoiceSegmentedButtonRow (
@@ -442,7 +446,9 @@ fun ExpandButton(expanded: Boolean, onClick: () -> Unit, primaryColor: Color) {
         imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
         contentDescription = null,
         tint = primaryColor,
-        modifier = Modifier.size(16.dp).clickable { onClick() }
+        modifier = Modifier
+            .size(16.dp)
+            .clickable { onClick() }
     )
 }
 
@@ -463,6 +469,121 @@ fun AcceptButton(onAccept: () -> Unit, primaryColor: Color) {
             fontWeight = FontWeight.SemiBold,
             fontSize = 13.sp,
             modifier = Modifier.padding(2.dp)
+        )
+    }
+}
+
+@Composable
+fun GalleryIconButton(
+    onClick: () -> Unit,
+    modifier: Modifier,
+) {
+    IconButton(
+        onClick = onClick,
+        modifier = modifier
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.gallery_ic),
+            contentDescription = "Add from gallery",
+            tint = Color.White,
+            modifier = Modifier.padding(4.dp)
+        )
+    }
+}
+
+@Composable
+fun CameraIconButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    IconButton(
+        onClick = onClick,
+        modifier = modifier
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.camera_ic),
+            contentDescription = "Add from gallery",
+            tint = Color.White,
+            modifier = Modifier.padding(4.dp)
+        )
+    }
+}
+
+
+@Composable
+fun NotifIconButton(
+    modifier: Modifier = Modifier,
+    color: Color = Color.White,
+    enabled: Boolean = true,
+    onClick: () -> Unit
+) {
+    IconButton(
+        modifier = modifier,
+        onClick = { onClick() },
+        enabled = enabled
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.notifs_ic),
+            contentDescription = "Notifications",
+            tint = color,
+            modifier = Modifier.size(30.dp).padding(4.dp)
+        )
+    }
+}
+
+@Composable
+fun SearchIconButton(
+    modifier: Modifier = Modifier,
+    color: Color = Color.White,
+    onClick: () -> Unit
+) {
+    IconButton(
+        modifier = modifier,
+        onClick = { onClick() }
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.search_ic),
+            contentDescription = "Notifications",
+            tint = color,
+            modifier = Modifier.size(30.dp).padding(4.dp)
+        )
+    }
+}
+
+@Composable
+fun LogoutIconButton(
+    modifier: Modifier = Modifier,
+    color: Color = Color.White,
+    onClick: () -> Unit
+) {
+    IconButton(
+        modifier = modifier,
+        onClick = { onClick() }
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.logout_ic),
+            contentDescription = "Notifications",
+            tint = color,
+            modifier = Modifier.padding(4.dp)
+        )
+    }
+}
+
+@Composable
+fun SettingsIconButton(
+    modifier: Modifier = Modifier,
+    color: Color = Color.White,
+    onClick: () -> Unit
+) {
+    IconButton(
+        modifier = modifier,
+        onClick = { onClick() }
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.settings_ic),
+            contentDescription = "Notifications",
+            tint = color,
+            modifier = Modifier.padding(4.dp)
         )
     }
 }

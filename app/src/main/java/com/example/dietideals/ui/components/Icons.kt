@@ -69,7 +69,7 @@ private fun homeIconForSelected(isSelected: Boolean) : Painter {
 fun UserIcon(modifier: Modifier, isSelected: Boolean) {
     Icon(
         painter = userIconForSelected(isSelected),
-        contentDescription = "User",
+        contentDescription = "NetUser",
         modifier = modifier.size(38.dp),
         tint = colorByTheme()
     )

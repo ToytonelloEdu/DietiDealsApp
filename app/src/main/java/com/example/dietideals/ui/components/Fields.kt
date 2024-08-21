@@ -14,6 +14,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,6 +37,7 @@ import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.Bid
 import com.example.dietideals.domain.models.IncrementalAuction
 import com.example.dietideals.domain.models.SilentAuction
+import kotlinx.coroutines.delay
 import java.text.NumberFormat
 import java.util.Date
 
@@ -175,8 +181,22 @@ fun TimerIconText(
     primaryColor: Color,
     modifier: Modifier = Modifier,
     underlineDistance: Dp = 4.dp,
-    underlineWidth: Dp = 100.dp
+    underlineWidth: Dp = 100.dp,
+    updating: Boolean = false
 ) {
+    val remainingSeconds = auction.calculateRemainingTime()
+    var remainingTime by rememberSaveable {
+        mutableIntStateOf(remainingSeconds.toInt())
+    }
+    if(updating) {
+        LaunchedEffect(remainingTime) {
+            while (remainingTime > 0) {
+                remainingTime--
+                delay(1000L)
+            }
+        }
+    }
+
     Column (
         verticalArrangement = Arrangement.SpaceAround,
         horizontalAlignment = Alignment.Start,
@@ -188,7 +208,7 @@ fun TimerIconText(
         ) {
             TimerIcon(primaryColor)
             Text(
-                text = "${auction.calculateRemainingTime()}",
+                text = "$remainingSeconds",
                 fontSize = 15.sp
             )
         }

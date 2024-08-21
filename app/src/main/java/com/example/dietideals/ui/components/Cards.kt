@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -29,12 +30,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.dietideals.R
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.IncrementalAuction
@@ -45,7 +50,7 @@ fun HomeAuctionCard(
     auction: Auction,
     onAuctionClicked: (Auction, Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    primaryColor: Color = MaterialTheme.colorScheme.primary
+    primaryColor: Color = auction.medianColor ?: MaterialTheme.colorScheme.primary
 ) {
     Card (
         modifier
@@ -78,7 +83,7 @@ fun MyAuctionCard(
     auction: Auction,
     onAuctionClicked: (Auction) -> Unit,
     modifier: Modifier = Modifier,
-    primaryColor: Color = MaterialTheme.colorScheme.primary
+    primaryColor: Color = auction.medianColor ?: MaterialTheme.colorScheme.primary
 ) {
     Card(
         modifier
@@ -110,7 +115,7 @@ fun MyBidAuctionCard(
     auction: Auction,
     onAuctionClicked: (Auction, Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    primaryColor: Color = MaterialTheme.colorScheme.primary
+    primaryColor: Color = auction.medianColor ?: MaterialTheme.colorScheme.primary
 ) {
     Card(
         modifier
@@ -148,13 +153,19 @@ fun MyBidAuctionInfoRow(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_launcher_background),
+        val restUrl = stringResource(R.string.restapi_url)
+        AsyncImage(
+            model = ImageRequest.Builder(context = LocalContext.current)
+                .data("${restUrl}photos/${auction.pictures[0]}").build(),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxHeight()
+                .padding(vertical = 4.dp)
+                .aspectRatio(1f)
                 .border(1.dp, primaryColor, RoundedCornerShape(2.dp)),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
+            placeholder = painterResource(id = R.drawable.loading_img),
+            error = painterResource(id = R.drawable.ic_broken_image),
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column(
@@ -187,13 +198,18 @@ fun MyAuctionInfoRow(auction: Auction, primaryColor: Color) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_launcher_background),
+        val restUrl = stringResource(R.string.restapi_url)
+        AsyncImage(
+            model = ImageRequest.Builder(context = LocalContext.current)
+                .data("${restUrl}photos/${auction.pictures[0]}").build(),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxHeight()
+                .aspectRatio(1f)
                 .border(1.dp, primaryColor, RoundedCornerShape(2.dp)),
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Crop,
+            placeholder = painterResource(id = R.drawable.loading_img),
+            error = painterResource(id = R.drawable.ic_broken_image),
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column(
@@ -316,12 +332,17 @@ private fun AuctionInfoRow(auction: Auction, primaryColor: Color, modifier: Modi
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.ic_launcher_background),
+        val restUrl = stringResource(R.string.restapi_url)
+        AsyncImage(
+            model = ImageRequest.Builder(context = LocalContext.current)
+                .data("${restUrl}photos/${auction.pictures[0]}").build(),
             contentDescription = null,
             modifier = Modifier
                 .size(130.dp)
-                .border(1.dp, primaryColor, RoundedCornerShape(2.dp))
+                .border(1.dp, primaryColor, RoundedCornerShape(2.dp)),
+            contentScale = ContentScale.Crop,
+            placeholder = painterResource(id = R.drawable.loading_img),
+            error = painterResource(id = R.drawable.ic_broken_image),
         )
         Column(
             modifier = Modifier.padding(horizontal = 16.dp),

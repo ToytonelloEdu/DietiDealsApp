@@ -4,6 +4,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -45,7 +46,7 @@ fun AppTopBar(
     navigateUp: () -> Unit,
     textForTopBar: @Composable () -> String,
     modifier: Modifier = Modifier,
-    actions: @Composable () -> Unit
+    actions: @Composable RowScope.() -> Unit
 ) {
     TopAppBar(
         title = { Text(text = textForTopBar()) },
