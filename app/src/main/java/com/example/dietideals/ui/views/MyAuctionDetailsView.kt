@@ -31,7 +31,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.min
 import androidx.compose.ui.unit.sp
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.Bid
@@ -47,48 +46,50 @@ import com.example.dietideals.ui.components.ExpandButton
 import com.example.dietideals.ui.components.LoadingView
 import com.example.dietideals.ui.components.NetworkErrorView
 import com.example.dietideals.ui.components.TimerIconText
-import java.util.Timer
 
 @Composable
 fun MyAuctionDetailsView(
     currentState: AuctionFetchState,
     onAccept: () -> Unit,
     modifier: Modifier = Modifier,
-    primaryColor: Color = MaterialTheme.colorScheme.primary,
 ) {
     when (currentState) {
         is AuctionFetchState.Loading -> LoadingView(modifier.fillMaxSize())
         is AuctionFetchState.Error -> NetworkErrorView(modifier.fillMaxSize())
-        is AuctionFetchState.AuctionSuccess -> SuccessAuctionDetails(currentState, primaryColor, modifier) { auction ->
-            Column (
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Row(
-                    Modifier.fillMaxWidth().padding(bottom = 8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
+        is AuctionFetchState.AuctionSuccess -> {
+            val auction = currentState.auction
+            val primaryColor = auction.medianColor ?: MaterialTheme.colorScheme.primary
+            SuccessAuctionDetails(currentState, primaryColor, modifier) { auct ->
+                Column (
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        text = "Offers:",
-                        color = primaryColor,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        modifier = Modifier.padding(horizontal = 4.dp)
-                    )
-                    if (auction is SilentAuction) {
-                        CalendarIconText(
-                            auction = auction,
-                            primaryColor = primaryColor,
-                            underlineLength = 150.dp,
-                            fontSize = 16.sp
+                    Row(
+                        Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "Offers:",
+                            color = primaryColor,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            modifier = Modifier.padding(horizontal = 4.dp)
                         )
+                        if (auct is SilentAuction) {
+                            CalendarIconText(
+                                auction = auct,
+                                primaryColor = primaryColor,
+                                underlineLength = 150.dp,
+                                fontSize = 16.sp
+                            )
+                        }
                     }
+                    MyAuctionInteractionCard(auction = auct, primaryColor = primaryColor, onAccept = onAccept)
                 }
-                MyAuctionInteractionCard(auction = auction, primaryColor = primaryColor, onAccept = onAccept)
             }
         }
     }
