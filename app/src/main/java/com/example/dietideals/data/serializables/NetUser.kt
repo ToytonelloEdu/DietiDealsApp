@@ -1,6 +1,7 @@
 package com.example.dietideals.data.serializables
 
 import kotlinx.serialization.Serializable
+import java.sql.Timestamp
 
 @Serializable
 data class NetUser (
@@ -11,8 +12,10 @@ data class NetUser (
     val firstName: String,
     val lastName: String,
     val proPicPath: String? = null,
-    val bio: String,
-    val nationality: String,
+    val bio: String? = null,
+    val nationality: String? = null,
+    val gender: String? = null,
+    val birthdate: String? = null,
     val bids: List<NetBid>? = null,
     val auctions: List<NetAuction>? = null
 ) {

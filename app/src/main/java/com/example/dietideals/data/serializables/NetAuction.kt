@@ -9,7 +9,8 @@ import kotlinx.serialization.Serializable
 data class NetAuction(
     val id: Int? = null,
     val auctionType: String,
-    val picturePath: String? = null,
+    val pictures: List<NetAuctionPhoto> = emptyList(),
+    val medianColor: String? = null,
     val objectName: String,
     val description: String,
     val auctioneer: NetUser? = null,
@@ -19,6 +20,7 @@ data class NetAuction(
     val lastBid: NetBid? = null,
     val tags: List<NetTag> = emptyList(),
     val expirationDate: String? = null,
+    val acceptedBid: NetBid? = null,
     val timeInterval: Int? = null,
     val startingPrice: Double? = null,
     val raisingThreshold: Double? = null,
