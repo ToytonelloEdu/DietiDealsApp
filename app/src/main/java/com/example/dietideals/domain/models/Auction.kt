@@ -1,11 +1,14 @@
 package com.example.dietideals.domain.models
 
+import androidx.compose.ui.graphics.Color
+import com.example.dietideals.data.serializables.NetAuction
 import java.sql.Timestamp
 import java.util.Date
 
 abstract class Auction(
     open val id: Int? = null,
-    open val picturePath: String? = null,
+    open val pictures: List<String> = emptyList(),
+    open val medianColor: Color? = null,
     open val objectName: String,
     open val description: String,
     open val auctioneer: Auctioneer? = null,
@@ -21,5 +24,6 @@ abstract class Auction(
     abstract fun isAuctionOver() : Boolean
 
     abstract fun hasBeenOverFor(days: Int) : Boolean
+    abstract fun toNetAuction(): NetAuction
 }
 

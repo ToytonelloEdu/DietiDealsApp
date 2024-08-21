@@ -1,5 +1,6 @@
 package com.example.dietideals.domain.models
 
+import androidx.compose.ui.graphics.Color
 import com.example.dietideals.data.persistence.entities.DbAuction
 import com.example.dietideals.data.serializables.NetAuction
 import com.example.dietideals.domain.auxiliary.Seconds
@@ -7,7 +8,8 @@ import java.sql.Timestamp
 
 data class IncrementalAuction (
     override val id: Int? = null,
-    override val picturePath: String? = null,
+    override val pictures: List<String> = emptyList(),
+    override val medianColor: Color? = null,
     override val objectName: String,
     override val description: String,
     override val auctioneer: Auctioneer? = null,
@@ -19,11 +21,12 @@ data class IncrementalAuction (
     val timeInterval: Int,
     val startingPrice: Double,
     val raisingThreshold: Double,
-) : Auction(id, picturePath, objectName, description, auctioneer, auctioneerUsername, date, bids, tags) {
+) : Auction(id, pictures, medianColor, objectName, description, auctioneer, auctioneerUsername, date, bids, tags) {
 
     constructor(netAuction: NetAuction) : this(
         netAuction.id,
-        netAuction.picturePath,
+        netAuction.pictures.map { it.path },
+        netAuction.medianColor?.let { Color(it.toLong(radix = 16)) },
         netAuction.objectName,
         netAuction.description,
         netAuction.auctioneer?.let { Auctioneer(it) },
@@ -43,7 +46,8 @@ data class IncrementalAuction (
 
     constructor(dbAuction: DbAuction) : this(
         dbAuction.id,
-        dbAuction.picturePath,
+        emptyList(),
+        null,
         dbAuction.objectName,
         dbAuction.description,
         null,
@@ -81,7 +85,11 @@ data class IncrementalAuction (
             val remainingTime = (((localLastBid.time.time) - now.time) / 1000).toInt() + timeInterval
             return Seconds(remainingTime)
         }
+    }
 
+    fun calculateNextAmount() : Double {
+        val lastBid = getLastBidOrBidsLast()
+        return (((lastBid?.amount?.plus(raisingThreshold)) ?: startingPrice))
     }
 
     override fun isAuctionOver(): Boolean {
@@ -99,5 +107,24 @@ data class IncrementalAuction (
             return end.before(nowMinusDays)
         } else
             return false
+    }
+
+    override fun toNetAuction(): NetAuction {
+        return NetAuction(
+            id = id,
+            pictures = emptyList(),
+            objectName = objectName,
+            description = description,
+            auctioneer = auctioneer?.toNetUser(),
+            auctioneerUsername = auctioneerUsername,
+            date = date.toString().replace(" ", "T") + "Z[UTC]",
+            bids = emptyList(),
+            lastBid = null,
+            tags = tags.map { it.toNetTag() },
+            timeInterval = timeInterval,
+            startingPrice = startingPrice,
+            raisingThreshold = raisingThreshold,
+            auctionType = "IncrementalAuction"
+        )
     }
 }

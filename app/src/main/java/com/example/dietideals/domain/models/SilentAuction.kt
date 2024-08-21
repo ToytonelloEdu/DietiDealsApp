@@ -1,5 +1,6 @@
 package com.example.dietideals.domain.models
 
+import androidx.compose.ui.graphics.Color
 import com.example.dietideals.data.persistence.entities.DbAuction
 import com.example.dietideals.data.serializables.NetAuction
 import java.sql.Timestamp
@@ -7,7 +8,8 @@ import java.util.Date
 
 data class SilentAuction (
     override val id: Int? = null,
-    override val picturePath: String? = null,
+    override val pictures: List<String> = emptyList(),
+    override val medianColor: Color? = null,
     override val objectName: String,
     override val description: String,
     override val auctioneer: Auctioneer? = null,
@@ -16,11 +18,12 @@ data class SilentAuction (
     override val bids: MutableList<Bid>,
     override val tags: List<Tag>,
     val expirationDate: Timestamp
-) : Auction(id, picturePath, objectName, description, auctioneer, auctioneerUsername, date, bids, tags) {
+) : Auction(id, pictures, medianColor, objectName, description, auctioneer, auctioneerUsername, date, bids, tags) {
 
     constructor(netAuction: NetAuction) : this(
         netAuction.id,
-        netAuction.picturePath,
+        netAuction.pictures.map { it.path },
+        netAuction.medianColor?.let { Color(it.toLong(radix = 16)) },
         netAuction.objectName,
         netAuction.description,
         netAuction.auctioneer?.let { Auctioneer(it) },
@@ -41,7 +44,8 @@ data class SilentAuction (
 
     constructor(dbAuction: DbAuction) : this(
         dbAuction.id,
-        dbAuction.picturePath,
+        emptyList(),
+        null,
         dbAuction.objectName,
         dbAuction.description,
         null,
@@ -75,5 +79,21 @@ data class SilentAuction (
             return expirationDate.before(nowMinusDays)
         } else
             return false
+    }
+
+    override fun toNetAuction(): NetAuction {
+        return NetAuction(
+            id = id,
+            pictures = emptyList(),
+            objectName = objectName,
+            description = description,
+            auctioneer = auctioneer?.toNetUser(),
+            auctioneerUsername = auctioneerUsername,
+            date = date.toString().replace(" ", "T") + "Z[UTC]",
+            bids = emptyList(),
+            tags = tags.map { it.toNetTag() },
+            expirationDate = expirationDate.toString().replace(" ", "T") + "Z[UTC]",
+            auctionType = "SilentAuction"
+        )
     }
 }

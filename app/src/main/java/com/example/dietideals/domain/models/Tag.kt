@@ -9,4 +9,10 @@ data class Tag (
         netTag.tagName,
     )
 
+    fun toNetTag() : NetTag {
+        return NetTag(
+            tagName = tagName,
+        )
+    }
+
 }

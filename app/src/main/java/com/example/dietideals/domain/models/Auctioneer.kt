@@ -1,6 +1,7 @@
 package com.example.dietideals.domain.models
 
 import com.example.dietideals.data.serializables.NetUser
+import java.sql.Timestamp
 
 data class Auctioneer(
     override val username: String,
@@ -9,10 +10,12 @@ data class Auctioneer(
     override val firstName: String,
     override val lastName: String,
     override val proPicPath: String? = null,
-    override val bio: String,
-    override val nationality: String,
-    val auctions: List<Auction>
-): User(username, email, password, firstName, lastName, proPicPath, bio, nationality) {
+    override val bio: String? = null,
+    override val nationality: String? = null,
+    override val gender: String? = null,
+    override val birthdate: Timestamp? = null,
+    val auctions: MutableList<Auction>
+): User(username, email, password, firstName, lastName, proPicPath, bio, nationality, gender, birthdate) {
     constructor(user: NetUser) : this(
         user.username,
         user.email,
@@ -22,6 +25,28 @@ data class Auctioneer(
         user.proPicPath,
         user.bio,
         user.nationality,
-        user.auctions?.map { it.toAuction() } ?: emptyList()
+        user.gender,
+        user.birthdate?.let {
+            Timestamp.valueOf(it.replace("Z[UTC]", "").replaceFirst("T", " "))
+        },
+        user.auctions?.map { it.toAuction() }?.toMutableList() ?: mutableListOf()
     )
+
+    override fun toNetUser(): NetUser {
+        return NetUser(
+            username = username,
+            email = email,
+            password = password,
+            firstName = firstName,
+            lastName = lastName,
+            proPicPath = proPicPath,
+            bio = bio,
+            nationality = nationality,
+            gender = gender,
+            birthdate = birthdate.toString().replace(" ", "T") + "Z[UTC]",
+            bids = null,
+            auctions = emptyList(),
+            userType = "Auctioneer"
+        )
+    }
 }

@@ -27,4 +27,14 @@ data class Bid(
     fun timeToDate() : Date {
         return Date.from(time.toInstant())
     }
+
+    fun toNetBid() : NetBid {
+        return NetBid(
+            auction = auction?.toNetAuction(),
+            buyer = buyer?.toNetUser(),
+            bidder = bidder,
+            amount = amount,
+            time = time.toString().replace(" ", "T") + "Z[UTC]"
+        )
+    }
 }
