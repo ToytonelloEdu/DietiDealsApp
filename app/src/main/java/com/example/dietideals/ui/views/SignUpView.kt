@@ -72,7 +72,8 @@ fun SignUpView(
         enterTransition = { EnterTransition.None },
         exitTransition = { ExitTransition.None },
         popEnterTransition = { EnterTransition.None },
-        popExitTransition = { ExitTransition.None }
+        popExitTransition = { ExitTransition.None },
+        modifier = Modifier.fillMaxSize()
     ) {
         composable(SignUpSteps.InsertInfo.name) {
             InsertInfoView(
@@ -96,6 +97,8 @@ fun SignUpView(
     }
 }
 
+
+
 @Composable
 fun InsertInfoView(
     newUser: NewUser,
@@ -103,6 +106,7 @@ fun InsertInfoView(
     formInvalid: Boolean = false,
     onCancelClick: () -> Unit,
     onNextClick: () -> Unit,
+    screenFraction: Float = 0.75f
 ) {
     Column(
         modifier = Modifier
@@ -112,15 +116,13 @@ fun InsertInfoView(
         verticalArrangement = Arrangement.SpaceAround
     ) {
         Column (
-            Modifier.fillMaxWidth(),
+            Modifier.fillMaxWidth(screenFraction),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = "Insert your informations",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 56.dp),
+                modifier = Modifier.fillMaxWidth(),
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontSize = 22.sp,
                     fontWeight = FontWeight.SemiBold
@@ -132,36 +134,44 @@ fun InsertInfoView(
                 onValueChange = { newUser.username = it; onValueChange(newUser) },
                 wrongCredentials = formInvalid,
                 textForError = "Username not available",
-                modifier = Modifier.padding(vertical = 24.dp)
+                modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp)
             )
             NameTextField(
                 label = "Name",
                 nameValue = newUser.firstName,
                 onValueChange = { newUser.firstName = it; onValueChange(newUser) },
                 wrongCredentials = formInvalid,
-                textForError = "Name format not valid"
+                textForError = "Name format not valid",
+                modifier = Modifier.fillMaxWidth()
             )
             SurnameTextField(
                 label = "Surname",
                 surnameValue = newUser.lastName,
                 onValueChange = { newUser.lastName = it; onValueChange(newUser) },
                 wrongCredentials = formInvalid,
-                textForError = "Surname format not valid"
+                textForError = "Surname format not valid",
+                modifier = Modifier.fillMaxWidth()
             )
         }
         GenderSelector(
             genderValue = newUser.gender,
-            onValueChange = { newUser.gender = it; onValueChange(newUser) }
+            onValueChange = { newUser.gender = it; onValueChange(newUser) },
+            Modifier.fillMaxWidth(screenFraction)
         )
-        BirthdateSelector()
+        BirthdateSelector(
+            newUser.birthdate,
+            onValueChange = { newUser.birthdate = it; onValueChange(newUser) },
+            modifier = Modifier
+                .fillMaxWidth(screenFraction)
+        )
         UserTypeSelector(
             userTypeValue = newUser.userType,
-            onValueChange = { newUser.userType = it; onValueChange(newUser) }
+            onValueChange = { newUser.userType = it; onValueChange(newUser) },
+            modifier = Modifier.fillMaxWidth(screenFraction)
         )
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 56.dp),
+                .fillMaxWidth(screenFraction),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -178,7 +188,8 @@ fun InsertCredentialsView(
     onValueChange: (NewUser) -> Unit,
     formInvalid: Boolean = false,
     onBackClick: () -> Unit,
-    onSignupClick: () -> Unit
+    onSignupClick: () -> Unit,
+    screenFraction: Float = 0.75f
 ) {
     Column(
         modifier = Modifier
@@ -191,8 +202,7 @@ fun InsertCredentialsView(
         Text(
             text = "Insert your credentials",
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 56.dp),
+                .fillMaxWidth(screenFraction),
             style = MaterialTheme.typography.titleLarge.copy(
                 fontSize = 22.sp,
                 fontWeight = FontWeight.SemiBold
@@ -203,7 +213,8 @@ fun InsertCredentialsView(
             onValueChange = { newUser.email = it; onValueChange(newUser) },
             wrongCredentials = formInvalid,
             label = "Email",
-            textForError = "Email format not valid"
+            textForError = "Email format not valid",
+            modifier = Modifier.fillMaxWidth(screenFraction)
         )
         Column(
             Modifier.fillMaxWidth(),
@@ -217,7 +228,8 @@ fun InsertCredentialsView(
                 passwordVisible = passwordVisible,
                 onVisibilityClick = { passwordVisible = !passwordVisible },
                 wrongCredentials = formInvalid,
-                textForError = "Password format not valid"
+                textForError = "Password format not valid",
+                Modifier.fillMaxWidth(screenFraction)
             )
             PasswordTextField(
                 label = "Confirm password",
@@ -226,13 +238,13 @@ fun InsertCredentialsView(
                 passwordVisible = passwordVisible,
                 onVisibilityClick = { passwordVisible = !passwordVisible },
                 wrongCredentials = formInvalid,
-                textForError = "Passwords are different"
+                textForError = "Passwords are different",
+                Modifier.fillMaxWidth(screenFraction)
             )
         }
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 56.dp),
+                .fillMaxWidth(screenFraction),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -245,22 +257,25 @@ fun InsertCredentialsView(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BirthdateSelector(
+    birthdate: Date,
+    onValueChange: (Date) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = 56.dp),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
 
         var showDialog by rememberSaveable { mutableStateOf(false) }
-        val date = Date()
-        val datePickerState = rememberDatePickerState(date.time, initialDisplayMode = DisplayMode.Input)
+        val datePickerState = rememberDatePickerState(
+            birthdate.time,
+            initialDisplayMode = DisplayMode.Input
+        )
         Text("Birthdate:")
         Row (
             Modifier
+                .fillMaxWidth()
                 .wrapContentWidth()
                 .border(1.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(8.dp))
                 .clip(RoundedCornerShape(8.dp))
@@ -291,12 +306,14 @@ fun BirthdateSelector(
                 onDismissRequest = {
                     showDialog = false
                     datePickerState.displayMode = DisplayMode.Picker
+                    onValueChange(Date(datePickerState.selectedDateMillis!!))
                 },
                 confirmButton = {
                     TextButton(
                         onClick = {
                             showDialog = false
                             datePickerState.displayMode = DisplayMode.Picker
+                            onValueChange(Date(datePickerState.selectedDateMillis!!))
                         }
                     ) {
                         Text("Select")
@@ -310,7 +327,7 @@ fun BirthdateSelector(
 }
 
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun SignUpViewPreview() {
     SignUpView(onSignupClick = {}, onCancelClick = {}, newUser = NewUser(), onValueChange = {_ ->})
