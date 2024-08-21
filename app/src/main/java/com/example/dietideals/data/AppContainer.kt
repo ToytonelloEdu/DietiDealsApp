@@ -19,7 +19,9 @@ import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
 import android.content.Context
+import com.example.dietideals.data.repos.BidsRepository
 import com.example.dietideals.data.repos.ImagesRepository
+import com.example.dietideals.data.repos.NetworkBidsRepository
 import com.example.dietideals.data.repos.NetworkImagesRepository
 
 interface AppContainer {
@@ -29,6 +31,7 @@ interface AppContainer {
     val authRepository: AuthRepository
     val tagsRepository: TagsRepository
     val imagesRepository: ImagesRepository
+    val bidsRepository: BidsRepository
 }
 
 class RetrofitAppContainer : AppContainer {
@@ -76,6 +79,9 @@ class RetrofitAppContainer : AppContainer {
     override val imagesRepository: ImagesRepository by lazy {
         NetworkImagesRepository(retrofitService)
     }
+    override val bidsRepository: BidsRepository by lazy {
+        NetworkBidsRepository(retrofitService)
+    }
 }
 
 class RoomAppContainer(
@@ -97,6 +103,8 @@ class RoomAppContainer(
     override val tagsRepository: TagsRepository
         get() = TODO("Not yet implemented")
     override val imagesRepository: ImagesRepository
+        get() = TODO("Not yet implemented")
+    override val bidsRepository: BidsRepository
         get() = TODO("Not yet implemented")
 
 }
