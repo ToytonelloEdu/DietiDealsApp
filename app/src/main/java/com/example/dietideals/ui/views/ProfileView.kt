@@ -44,7 +44,7 @@ fun ProfileView(userState: UserState, modifier: Modifier = Modifier, isOwnProfil
     val user: User = when (userState) {
         is UserState.Bidder -> userState.buyer
         is UserState.Vendor -> userState.auctioneer
-        else -> throw IllegalArgumentException("User is not logged in")
+        else -> throw IllegalArgumentException("NetUser is not logged in")
     }
     UserProfileView(user, isOwnProfile, modifier)
 }
@@ -107,7 +107,7 @@ fun UserMainInfosRow(user: User, modifier: Modifier = Modifier) {
                 text = when (user) {
                     is Buyer -> "Buyer"
                     is Auctioneer -> "Auctioneer"
-                    else -> throw IllegalArgumentException("User is not logged in")
+                    else -> throw IllegalArgumentException("NetUser is not logged in")
                 },
                 modifier = Modifier.padding(top = 4.dp),
                 style = MaterialTheme.typography.labelLarge.copy(
@@ -206,7 +206,7 @@ private fun ProfilePicture(picturePath: String?, modifier: Modifier = Modifier) 
         contentDescription = "profile picture",
         contentScale = ContentScale.Crop,
         placeholder = painterResource(id = R.drawable.loading_img),
-        error = painterResource(id = R.drawable.ic_broken_image),
+        error = painterResource(id = R.drawable.propicplaceholder),
         modifier = modifier
             .border(2.dp, MaterialTheme.colorScheme.primary, RoundedCornerShape(32.dp))
             .clip(RoundedCornerShape(32.dp))
@@ -219,15 +219,17 @@ fun ProfileViewPreview() {
     ProfileView(
         UserState.Vendor(
             Auctioneer(
-                "toytonello",
-                "ascionantonio@gmail.com",
-                null,
-                "Antonio",
-                "Ascione",
-                "toytonello.jpg",
-                "Sono uno studente di Informatica alla Federico II.\nHo 22 anni e amo la natura",
-                "Italia",
-                emptyList()
+                username = "toytonello",
+                email = "ascionantonio@gmail.com",
+                password = null,
+                firstName = "Antonio",
+                lastName = "Ascione",
+                proPicPath = "toytonello.jpg",
+                bio = "Sono uno studente di Informatica alla Federico II.\nHo 22 anni e amo la natura",
+                nationality = "Italia",
+                gender = "Male",
+                birthdate = null,
+                auctions = mutableListOf()
             )
         )
     )
