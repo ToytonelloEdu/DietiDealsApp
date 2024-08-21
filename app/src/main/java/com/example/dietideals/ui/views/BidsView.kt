@@ -1,6 +1,7 @@
 package com.example.dietideals.ui.views
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -11,6 +12,7 @@ import androidx.compose.ui.Modifier
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.ui.UserState
 import com.example.dietideals.ui.components.MyBidAuctionCard
+import com.example.dietideals.ui.components.SwipeRefresh
 
 @Composable
 fun BidsView(
@@ -19,23 +21,25 @@ fun BidsView(
     modifier: Modifier = Modifier
 ) {
     val buyer = bidderUserState.buyer
-    if (buyer.bids.isEmpty()) {
-        Column (
-            modifier = modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("No auctions created")
-        }
-    } else {
-        LazyColumn (
-            modifier = modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            val bids = buyer.bids
-            items(bids.size) { index ->
-                MyBidAuctionCard(bids[index].auction!!, onAuctionClicked)
+    SwipeRefresh(isRefreshing = false, onRefresh = { /*TODO*/ }) {
+        if (buyer.bids.isEmpty()) {
+            Column(
+                modifier = modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text("No bids placed")
+            }
+        } else {
+            LazyColumn(
+                modifier = modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                val bids = buyer.bids
+                items(bids.size) { index ->
+                    MyBidAuctionCard(bids[index].auction!!, onAuctionClicked)
+                }
             }
         }
     }
