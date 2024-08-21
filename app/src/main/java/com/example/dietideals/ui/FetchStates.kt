@@ -15,7 +15,7 @@ sealed interface UserState {
 }
 
 sealed interface HomeFetchState {
-    data class HomeSuccess(val auctions: List<Auction>) : HomeFetchState
+    data class HomeSuccess(val auctions: List<Auction>, val isRefreshing: Boolean = false) : HomeFetchState
     data object Loading : HomeFetchState
     data class Error(val message: String? = null) : HomeFetchState
 }
@@ -35,5 +35,6 @@ sealed class SignUpState (val newUser: NewUser) {
 sealed class NewAuctionState(val newAuction: NewAuction) {
     class Initial(newAuction: NewAuction, val formInvalid: Boolean = false) : NewAuctionState(newAuction)
     class Loading(newAuction: NewAuction) : NewAuctionState(newAuction)
+    class Success(newAuction: NewAuction) : NewAuctionState(newAuction)
     class Error(newAuction: NewAuction, val message: String? = null) : NewAuctionState(newAuction)
 }
