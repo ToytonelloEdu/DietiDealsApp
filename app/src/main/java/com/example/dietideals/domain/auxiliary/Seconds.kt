@@ -19,4 +19,9 @@ class Seconds (
         return seconds > 0
     }
 
+    fun toInt(): Int {
+        return seconds
+    }
+
+
 }
