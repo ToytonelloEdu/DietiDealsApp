@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -37,7 +38,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -48,7 +52,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.dietideals.R
 import com.example.dietideals.data.serializables.NetAuction
 import com.example.dietideals.domain.models.Auction
@@ -75,55 +80,59 @@ import com.example.dietideals.ui.theme.primaryLight
 @Composable
 fun AuctionDetailsView(
     currentState: AuctionFetchState,
-    onSubmit: (Int) -> Unit,
+    onSubmit: (Auction, Double) -> Unit,
     modifier: Modifier = Modifier,
-    primaryColor: Color = MaterialTheme.colorScheme.primary,
 ) {
     when (currentState) {
         is AuctionFetchState.Loading -> LoadingView(modifier.fillMaxSize())
         is AuctionFetchState.Error -> NetworkErrorView(modifier.fillMaxSize())
-        is AuctionFetchState.AuctionSuccess -> SuccessAuctionDetails(currentState, primaryColor) { auction ->
-            Column (Modifier.fillMaxWidth(), Arrangement.Center, Alignment.CenterHorizontally) {
-                AuctionInteractionCard(
-                    primaryColor = primaryColor,
-                    cardContent = {
-                        when (auction) {
-                            is IncrementalAuction -> AuctionInteraction(auction, primaryColor, onSubmit)
-                            is SilentAuction -> AuctionInteraction(auction, primaryColor, onSubmit)
+        is AuctionFetchState.AuctionSuccess -> {
+            val auction = currentState.auction
+            val primaryColor = auction.medianColor ?: MaterialTheme.colorScheme.primary
+            SuccessAuctionDetails(currentState, primaryColor) { auct ->
+                Column (Modifier.fillMaxWidth(), Arrangement.Center, Alignment.CenterHorizontally) {
+                    AuctionInteractionCard(
+                        primaryColor = primaryColor,
+                        cardContent = {
+                            when (auct) {
+                                is IncrementalAuction -> AuctionInteraction(auct, primaryColor, onSubmit)
+                                is SilentAuction -> AuctionInteraction(auct, primaryColor, onSubmit)
+                            }
                         }
-                    }
-                )
-                if(auction is IncrementalAuction) {
-                    var showBids by rememberSaveable { mutableStateOf(false) }
-                    ShowBidsButton(showBids, { showBids = !showBids }, Modifier)
-                    if (showBids) {
-                        ModalBottomSheet(
-                            onDismissRequest = { showBids = false },
-                            modifier = Modifier.fillMaxHeight()
-                        ) {
-                            Text(
-                                text = "Offers history:",
-                                fontWeight = FontWeight.ExtraBold,
-                                fontSize = 18.sp,
-                                color = primaryColor,
-                                textAlign = TextAlign.Start,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(8.dp)
-                            )
-                            LazyColumn(
-                                modifier = Modifier.fillMaxWidth().padding(8.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Top
+                    )
+
+                    if(auct is IncrementalAuction) {
+                        var showBids by rememberSaveable { mutableStateOf(false) }
+                        ShowBidsButton(showBids, { showBids = !showBids }, Modifier)
+                        if (showBids) {
+                            ModalBottomSheet(
+                                onDismissRequest = { showBids = false },
+                                modifier = Modifier.fillMaxHeight()
                             ) {
-                                items(auction.bids.size) {
-                                    val reverseIndex = (auction.bids.size - 1) - it
-                                    IncrementalBidPill(
-                                        auction,
-                                        auction.bids[reverseIndex],
-                                        it,
-                                        primaryColor = primaryColor
-                                    )
+                                Text(
+                                    text = "Offers history:",
+                                    fontWeight = FontWeight.ExtraBold,
+                                    fontSize = 18.sp,
+                                    color = primaryColor,
+                                    textAlign = TextAlign.Start,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(8.dp)
+                                )
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxWidth().padding(8.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Top
+                                ) {
+                                    items(auct.bids.size) {
+                                        val reverseIndex = (auct.bids.size - 1) - it
+                                        IncrementalBidPill(
+                                            auct,
+                                            auct.bids[reverseIndex],
+                                            it,
+                                            primaryColor = primaryColor
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -163,7 +172,6 @@ fun SuccessAuctionDetails(
     centerContent: @Composable (Auction) -> Unit
 ) {
     val auction = successState.auction;
-    val photos = successState.photos;
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -171,7 +179,7 @@ fun SuccessAuctionDetails(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        AuctionInfoColumn(auction, primaryColor, photos)
+        AuctionInfoColumn(auction, primaryColor, auction.pictures)
         centerContent(auction)
         AuctionTagsGrid(auction.tags, primaryColor)
     }
@@ -214,7 +222,7 @@ fun PhotosLazyRow(primaryColor: Color, photos: List<String>) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(150.dp)
+            .fillMaxHeight(0.2f)
             .wrapContentHeight()
             .background(MaterialTheme.colorScheme.surfaceVariant)
             .border(1.dp, Color.Black),
@@ -222,8 +230,21 @@ fun PhotosLazyRow(primaryColor: Color, photos: List<String>) {
     ) {
         if (photos.isNotEmpty()) {
             LazyRow {
-                items(photos.size) {
-
+                items(photos.size) { index ->
+                    val restUrl = stringResource(R.string.restapi_url)
+                    AsyncImage(
+                        model = ImageRequest.Builder(context = LocalContext.current)
+                            .data("${restUrl}photos/${photos[index]}").build(),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .aspectRatio(1f)
+                            .padding(4.dp)
+                            .border(1.dp, primaryColor, RoundedCornerShape(2.dp)),
+                        contentScale = ContentScale.Crop,
+                        placeholder = painterResource(id = R.drawable.loading_img),
+                        error = painterResource(id = R.drawable.ic_broken_image),
+                    )
                 }
             }
         } else {
@@ -232,7 +253,7 @@ fun PhotosLazyRow(primaryColor: Color, photos: List<String>) {
             ) {
                 Box (
                     modifier = Modifier
-                        .size(150.dp)
+                        .fillMaxHeight()
                         .padding(4.dp)
                         .background(primaryColor),
                     contentAlignment = Alignment.Center
@@ -279,7 +300,7 @@ fun AuctionInteractionCard(
 fun AuctionInteraction(
     auction: IncrementalAuction,
     primaryColor: Color,
-    onSubmit: (Int) -> Unit
+    onSubmit: (Auction, Double) -> Unit
 ) {
     Text(
         "Offers",
@@ -291,7 +312,7 @@ fun AuctionInteraction(
             .fillMaxWidth(),
     )
     BidsInfoFields(auction, primaryColor)
-    BidInteraction(auction, primaryColor)
+    BidInteraction(auction, primaryColor, onSubmit)
 }
 
 @Composable
@@ -364,7 +385,7 @@ private fun LastBidRow(auction: IncrementalAuction, primaryColor: Color) {
 }
 
 @Composable
-fun BidInteraction(auction: IncrementalAuction, primaryColor: Color) {
+fun BidInteraction(auction: IncrementalAuction, primaryColor: Color, onSubmit: (Auction, Double) -> Unit) {
     Row (
         modifier = Modifier
             .fillMaxWidth()
@@ -372,8 +393,8 @@ fun BidInteraction(auction: IncrementalAuction, primaryColor: Color) {
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        TimerIconText(auction, primaryColor, underlineDistance = 4.dp)
-        BidIconButton(auction, primaryColor, { _, _ ->}, timeInterval = auction.timeInterval)
+        TimerIconText(auction, primaryColor, underlineDistance = 4.dp, updating = true)
+        BidIconButton(auction, primaryColor, { _, _ -> onSubmit(auction, auction.calculateNextAmount()) }, timeInterval = auction.timeInterval)
     }
 }
 
@@ -381,7 +402,7 @@ fun BidInteraction(auction: IncrementalAuction, primaryColor: Color) {
 fun AuctionInteraction(
     auction: SilentAuction,
     primaryColor: Color,
-    onSubmit: (Int) -> Unit,
+    onSubmit: (Auction, Double) -> Unit,
 ) {
     var offerValue by rememberSaveable { mutableStateOf("") }
     Text(
@@ -506,9 +527,9 @@ fun TagsLazyStaggeredGrid(tags: List<Tag>, primaryColor: Color, modifier: Modifi
 }
 
 @Composable
-fun TagPill(tag: Tag, primaryColor: Color) {
+fun TagPill(tag: Tag, primaryColor: Color, modifier: Modifier = Modifier) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .clip(RoundedCornerShape(14.dp))
             .height(30.dp)
             .background(primaryColor)
@@ -533,6 +554,7 @@ fun InteractionCardPreview() {
         netAuction = NetAuction(
             null,
             "Incremental Auction",
+            emptyList(),
             null,
             "Prova",
             "Prova",
@@ -544,6 +566,6 @@ fun InteractionCardPreview() {
     )
     AuctionInteractionCard(
         primaryLight
-    ) { AuctionInteraction(auction, primaryLight) { _ -> } }
+    ) { AuctionInteraction(auction, primaryLight) { _, _ -> } }
 }
 
