@@ -7,6 +7,8 @@ import com.example.dietideals.data.persistence.daos.AuctionDao
 interface AuctionsRepository {
     suspend fun getAuctions(): List<Auction>
     suspend fun getAuctionById(id: Int): Auction
+    suspend fun getAuctionsByUser(username: String) : List<Auction>
+    suspend fun addAuction(auction: Auction, token: String? = null) : Auction
 }
 
 class NetworkAuctionsRepository(
@@ -18,6 +20,13 @@ class NetworkAuctionsRepository(
 
     override suspend fun getAuctionById(id: Int): Auction =
         networkData.getAuctionById(id).toAuction()
+
+    override suspend fun getAuctionsByUser(username: String): List<Auction> =
+        networkData.getAuctionsByUser(username).map { it.toAuction() }
+
+    override suspend fun addAuction(auction: Auction, token: String?): Auction {
+        return networkData.postAuction(token!!, auction.toNetAuction()).toAuction()
+    }
 }
 
 class OfflineAuctionsRepository(
@@ -29,5 +38,13 @@ class OfflineAuctionsRepository(
 
     override suspend fun getAuctionById(id: Int): Auction =
         auctionDao.getAuctionById(id).toAuction()
+
+    override suspend fun getAuctionsByUser(username: String): List<Auction> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun addAuction(auction: Auction, token: String?): Auction {
+        TODO("Not yet implemented")
+    }
 
 }

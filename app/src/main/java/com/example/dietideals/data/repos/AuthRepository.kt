@@ -3,10 +3,11 @@ package com.example.dietideals.data.repos
 import com.example.dietideals.data.serializables.NetAuth
 import com.example.dietideals.data.serializables.NetUser
 import com.example.dietideals.data.network.NetworkApiService
+import com.example.dietideals.domain.models.User
 
 interface AuthRepository{
     suspend fun auth(handle: String, password: String): String //JWT Token
-    suspend fun signup(netUser: NetUser): NetUser
+    suspend fun signup(user: User): NetUser
 }
 
 class NetworkAuthRepository(
@@ -17,8 +18,8 @@ class NetworkAuthRepository(
         return networkData.restLogin(auth)
     }
 
-    override suspend fun signup(netUser: NetUser): NetUser {
-        return networkData.restSignup(netUser)
+    override suspend fun signup(user: User): NetUser {
+        return networkData.restSignup(user.toNetUser())
     }
 
 }
