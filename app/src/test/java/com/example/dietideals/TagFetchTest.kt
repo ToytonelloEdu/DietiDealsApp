@@ -10,11 +10,11 @@ class TagFetchTest {
     val tagsRepo = RetrofitAppContainer().tagsRepository;
 
     @Test
-    fun fetchTags () {
+    fun fetchTags() {
         runTest {
-        tagsRepo.getTags().forEach {
-            println(it.tagName)
-        }
+            tagsRepo.getTags().forEach {
+                println(it.tagName)
+            }
         }
     }
 }

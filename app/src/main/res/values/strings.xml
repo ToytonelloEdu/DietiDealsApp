@@ -16,4 +16,5 @@
     <string name="my_auction_details">My Auction Details</string>
     <string name="my_bid_auction_details">My Bid Auction Details</string>
     <string name="new_auction">New Auction</string>
+    <string name="user">User</string>
 </resources>
