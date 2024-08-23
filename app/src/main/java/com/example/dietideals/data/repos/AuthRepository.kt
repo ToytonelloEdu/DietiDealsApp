@@ -1,7 +1,7 @@
 package com.example.dietideals.data.repos
 
-import com.example.dietideals.data.serializables.NetAuth
-import com.example.dietideals.data.serializables.NetUser
+import com.example.dietideals.data.network.serializables.NetAuth
+import com.example.dietideals.data.network.serializables.NetUser
 import com.example.dietideals.data.network.NetworkApiService
 import com.example.dietideals.domain.models.User
 

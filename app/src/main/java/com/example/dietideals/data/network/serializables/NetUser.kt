@@ -1,7 +1,9 @@
-package com.example.dietideals.data.serializables
+package com.example.dietideals.data.network.serializables
 
+import com.example.dietideals.domain.models.Auctioneer
+import com.example.dietideals.domain.models.Buyer
+import com.example.dietideals.domain.models.User
 import kotlinx.serialization.Serializable
-import java.sql.Timestamp
 
 @Serializable
 data class NetUser (
@@ -19,5 +21,11 @@ data class NetUser (
     val bids: List<NetBid>? = null,
     val auctions: List<NetAuction>? = null
 ) {
-
+    fun toUser(): User {
+        return when(userType) {
+            "Auctioneer" -> Auctioneer(this)
+            "Buyer" -> Buyer(this)
+            else -> throw IllegalArgumentException("NetUser type not found")
+        }
+    }
 }

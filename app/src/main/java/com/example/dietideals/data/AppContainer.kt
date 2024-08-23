@@ -1,16 +1,21 @@
 package com.example.dietideals.data
 
-import com.example.dietideals.R
+import android.content.Context
 import com.example.dietideals.data.network.NetworkApiService
 import com.example.dietideals.data.persistence.AppDatabase
 import com.example.dietideals.data.repos.AuctionsRepository
 import com.example.dietideals.data.repos.AuthRepository
+import com.example.dietideals.data.repos.BidsRepository
+import com.example.dietideals.data.repos.ImagesRepository
 import com.example.dietideals.data.repos.NetworkAuctionsRepository
 import com.example.dietideals.data.repos.NetworkAuthRepository
+import com.example.dietideals.data.repos.NetworkBidsRepository
+import com.example.dietideals.data.repos.NetworkImagesRepository
 import com.example.dietideals.data.repos.NetworkStringsRepository
 import com.example.dietideals.data.repos.NetworkTagsRepository
 import com.example.dietideals.data.repos.NetworkUsersRepository
 import com.example.dietideals.data.repos.OfflineAuctionsRepository
+import com.example.dietideals.data.repos.OfflineUsersRepository
 import com.example.dietideals.data.repos.StringsRepository
 import com.example.dietideals.data.repos.TagsRepository
 import com.example.dietideals.data.repos.UsersRepository
@@ -18,14 +23,8 @@ import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFact
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import retrofit2.Retrofit
-import android.content.Context
-import com.example.dietideals.data.repos.BidsRepository
-import com.example.dietideals.data.repos.ImagesRepository
-import com.example.dietideals.data.repos.NetworkBidsRepository
-import com.example.dietideals.data.repos.NetworkImagesRepository
 
 interface AppContainer {
-    val stringsRepository: StringsRepository
     val auctionsRepository: AuctionsRepository
     val usersRepository: UsersRepository
     val authRepository: AuthRepository
@@ -57,10 +56,6 @@ class RetrofitAppContainer : AppContainer {
 
     //Repositories
 
-    override val stringsRepository: StringsRepository by lazy {
-        NetworkStringsRepository.getInstance(retrofitService)
-    }
-
     override val auctionsRepository: AuctionsRepository by lazy {
         NetworkAuctionsRepository(retrofitService)
     }
@@ -90,21 +85,22 @@ class RoomAppContainer(
 
     private val database = AppDatabase.getDatabase(context)
 
-    override val stringsRepository: StringsRepository
-        get() = TODO("Not yet implemented")
-
     override val auctionsRepository: AuctionsRepository by lazy{
         OfflineAuctionsRepository(database.auctionDao())
     }
-    override val usersRepository: UsersRepository
-        get() = TODO("Not yet implemented")
+    override val usersRepository: UsersRepository by lazy {
+        OfflineUsersRepository(database.ownUserDao())
+    }
     override val authRepository: AuthRepository
-        get() = TODO("Not yet implemented")
+        get() = throw NotImplementedError()
+
     override val tagsRepository: TagsRepository
-        get() = TODO("Not yet implemented")
+        get() = throw NotImplementedError()
+
     override val imagesRepository: ImagesRepository
-        get() = TODO("Not yet implemented")
+        get() = throw NotImplementedError()
+
     override val bidsRepository: BidsRepository
-        get() = TODO("Not yet implemented")
+        get() = throw NotImplementedError()
 
 }

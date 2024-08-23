@@ -3,8 +3,6 @@ package com.example.dietideals.data.persistence.entities
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.Relation
-import com.example.dietideals.data.serializables.NetBid
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.IncrementalAuction
 import com.example.dietideals.domain.models.SilentAuction
@@ -15,7 +13,8 @@ data class DbAuction(
     val id: Int,
 
     val auctionType: String,
-    val picturePath: String? = null,
+    val medianColor: String? = null,
+    val picture: String,
     val objectName: String,
     val description: String,
     val auctioneerUsername: String? = null,

@@ -12,8 +12,8 @@ import com.example.dietideals.data.persistence.entities.DbOwnUser
 
 @Database(
     entities = [DbAuction::class, DbOwnUser::class, DbLastBid::class],
-    version = 1,
-    exportSchema = false
+    version = 4,
+    exportSchema = false,
 )
 abstract class AppDatabase: RoomDatabase(){
 
@@ -28,6 +28,7 @@ abstract class AppDatabase: RoomDatabase(){
         fun getDatabase(context: Context): AppDatabase {
             return instance ?: synchronized(this) {
                 Room.databaseBuilder(context, AppDatabase::class.java, "app_database")
+                    .fallbackToDestructiveMigration()
                     .build()
                     .also { instance = it }
             }

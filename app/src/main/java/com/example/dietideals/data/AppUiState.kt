@@ -13,5 +13,9 @@ data class AppUiState(
     val currentHomeState: HomeFetchState = HomeFetchState.Loading,
     val currentAuctionState: AuctionFetchState = AuctionFetchState.Loading,
     val signUpState: SignUpState = SignUpState.Initial(NewUser()),
-    val newAuctionState: NewAuctionState = NewAuctionState.Initial(NewAuction())
+    val newAuctionState: NewAuctionState = NewAuctionState.Initial(NewAuction()),
+
+    val isRefreshing: Boolean = false,
+    val isDirectBid: Boolean = false,
+    val isOnline: Boolean = true
 )

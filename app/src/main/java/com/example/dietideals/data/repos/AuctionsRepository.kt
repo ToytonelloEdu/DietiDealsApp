@@ -1,5 +1,6 @@
 package com.example.dietideals.data.repos
 
+import android.util.Log
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.data.network.NetworkApiService
 import com.example.dietideals.data.persistence.daos.AuctionDao
@@ -34,7 +35,10 @@ class OfflineAuctionsRepository(
 ) : AuctionsRepository {
 
     override suspend fun getAuctions(): List<Auction> =
-        auctionDao.getAuctions().map { it.toAuction() }
+        auctionDao.getAuctions().map {
+            Log.d("HomePage", "Color: ${it.medianColor}")
+            it.toAuction()
+        }
 
     override suspend fun getAuctionById(id: Int): Auction =
         auctionDao.getAuctionById(id).toAuction()
@@ -44,7 +48,8 @@ class OfflineAuctionsRepository(
     }
 
     override suspend fun addAuction(auction: Auction, token: String?): Auction {
-        TODO("Not yet implemented")
+        auctionDao.insert(auction.toDbAuction())
+        return auction
     }
 
 }

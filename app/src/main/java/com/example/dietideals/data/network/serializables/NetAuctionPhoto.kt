@@ -1,4 +1,4 @@
-package com.example.dietideals.data.serializables
+package com.example.dietideals.data.network.serializables
 
 import kotlinx.serialization.Serializable
 

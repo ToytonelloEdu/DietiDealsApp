@@ -1,10 +1,10 @@
 package com.example.dietideals.data.network
 
-import com.example.dietideals.data.serializables.NetAuction
-import com.example.dietideals.data.serializables.NetAuth
-import com.example.dietideals.data.serializables.NetBid
-import com.example.dietideals.data.serializables.NetTag
-import com.example.dietideals.data.serializables.NetUser
+import com.example.dietideals.data.network.serializables.NetAuction
+import com.example.dietideals.data.network.serializables.NetAuth
+import com.example.dietideals.data.network.serializables.NetBid
+import com.example.dietideals.data.network.serializables.NetTag
+import com.example.dietideals.data.network.serializables.NetUser
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -33,7 +33,7 @@ interface NetworkApiService {
     suspend fun getAuctionById(@Path("id") id: Int) : NetAuction
 
     @POST("auctions")
-    suspend fun postAuction(@Header("Bearer") token: String, @Body auction: NetAuction) : NetAuction
+    suspend fun postAuction(@Header("Authorization") token: String, @Body auction: NetAuction) : NetAuction
 
     @GET("users/{handle}/auctions")
     suspend fun getAuctionsByUser(@Path("handle") handle: String) : List<NetAuction>
@@ -58,7 +58,7 @@ interface NetworkApiService {
     suspend fun getBidsByUser(@Path("handle") handle: String) : List<NetBid>
 
     @POST("bids")
-    suspend fun postBid(@Header("Bearer") token: String, @Body bid: NetBid) : NetBid
+    suspend fun postBid(@Header("Authorization") token: String, @Body bid: NetBid) : NetBid
 
 
     //IMAGES
