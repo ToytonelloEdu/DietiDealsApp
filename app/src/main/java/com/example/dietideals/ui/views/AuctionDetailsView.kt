@@ -55,7 +55,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.dietideals.R
-import com.example.dietideals.data.serializables.NetAuction
+import com.example.dietideals.data.network.serializables.NetAuction
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.IncrementalAuction
 import com.example.dietideals.domain.models.SilentAuction

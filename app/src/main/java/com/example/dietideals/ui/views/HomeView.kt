@@ -1,11 +1,12 @@
 package com.example.dietideals.ui.views
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.pullrefresh.rememberPullRefreshState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,7 +15,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import com.example.dietideals.ui.HomeFetchState
 import com.example.dietideals.ui.components.HomeAuctionCard
 import com.example.dietideals.ui.components.LoadingView
-import com.example.dietideals.ui.components.NetworkErrorView
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.ui.components.SwipeRefresh
 
@@ -22,13 +22,12 @@ import com.example.dietideals.ui.components.SwipeRefresh
 fun HomeView(
     fetchState: HomeFetchState,
     onAuctionClicked: (Auction, Boolean) -> Unit,
-    onRetry: () -> Unit,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (fetchState) {
-        is HomeFetchState.HomeSuccess -> SuccessHomeView(fetchState, onAuctionClicked, onRefresh, modifier)
-        is HomeFetchState.Error -> NetworkErrorView(modifier.fillMaxSize(), onRetry)
+        is HomeFetchState.HomeSuccess -> SuccessHomeView(fetchState.auctions, fetchState.isRefreshing, onAuctionClicked, onRefresh, modifier)
+        is HomeFetchState.Error -> SuccessHomeView(fetchState.auctions, fetchState.isRefreshing, onAuctionClicked, onRefresh, modifier)
         else -> LoadingView(modifier.fillMaxSize())
     }
 
@@ -36,21 +35,24 @@ fun HomeView(
 
 @Composable
 private fun SuccessHomeView(
-    successState: HomeFetchState.HomeSuccess,
+    auctions: List<Auction>,
+    isRefreshing: Boolean,
     onAuctionClicked: (Auction, Boolean) -> Unit,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier
 ) {
 
     SwipeRefresh(
-        isRefreshing = successState.isRefreshing,
+        isRefreshing = isRefreshing,
         onRefresh = onRefresh
     ){
-        if (successState.auctions.isEmpty()) {
+        if (auctions.isEmpty()) {
             Column(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = modifier.fillMaxSize()
+                modifier = modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
             ) {
                 Text(text = "No auctions found", modifier = Modifier)
             }
@@ -60,10 +62,10 @@ private fun SuccessHomeView(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = modifier.fillMaxSize()
             ) {
-                val auctions = successState.auctions
+
                 items(auctions.size) { index ->
                     if (!auctions[index].hasBeenOverFor(3))
-                        HomeAuctionCard(successState.auctions[index], onAuctionClicked)
+                        HomeAuctionCard(auctions[index], onAuctionClicked)
                 }
             }
         }
@@ -73,5 +75,5 @@ private fun SuccessHomeView(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun HomeViewPreview() {
-        HomeView(HomeFetchState.HomeSuccess(auctions = emptyList()), { _, _ -> },{}, {})
+        HomeView(HomeFetchState.HomeSuccess(auctions = emptyList()), { _, _ -> }, {})
 }
