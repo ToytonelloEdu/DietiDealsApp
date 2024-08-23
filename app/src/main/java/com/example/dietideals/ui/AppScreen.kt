@@ -5,7 +5,6 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -56,7 +55,8 @@ enum class AppView (@StringRes val title: Int) {
     UserDetails(R.string.user_details),
     NewAuction(R.string.new_auction),
     LogIn(R.string.log_in),
-    SignUp(R.string.sign_up)
+    SignUp(R.string.sign_up),
+    User(R.string.user)
 }
 
 @Composable
@@ -94,7 +94,7 @@ fun AppScreen(
                         AppView.Auctions,
                 )) { NotifIconButton { /*TODO*/ } }
                 if (currentScreen == AppView.Profile) {
-                    //SettingsIconButton { }
+                    SettingsIconButton { }
                     LogoutIconButton { viewModel.onLogoutClicked() }
                 }
 
@@ -128,7 +128,10 @@ fun AppScreen(
                     }
                     AppView.Auctions -> {
                         FloatingActionButton(
-                            onClick = { navController.navigate(AppView.NewAuction.name) },
+                            onClick = {
+                                viewModel.onNewAuctionClicked()
+                                navController.navigate(AppView.NewAuction.name)
+                            },
                             containerColor = MaterialTheme.colorScheme.primary
                         ) {
                             Icon(
@@ -172,7 +175,6 @@ fun AppScreen(
                             }
 
                         },
-                        onRetry = { viewModel.retryHomePageLoading() },
                         onRefresh = { viewModel.refreshHomePage() }
                     )
                 }
@@ -195,11 +197,16 @@ fun AppScreen(
                 )
             }
             composable(AppView.Auctions.name) {
+                viewModel.refreshUserAuctions()
                 AuctionsView(
                     vendorUserState = uiState.userState as UserState.Vendor,
                     onAuctionClicked = { auction ->
                         viewModel.onAuctionClicked(auction, false)
                         navController.navigate(AppView.MyAuctionDetails.name)
+                    },
+                    isRefreshing = uiState.isRefreshing,
+                    onRefresh = {
+                        viewModel.refreshUserAuctions(true)
                     }
                 )
             }
@@ -214,11 +221,16 @@ fun AppScreen(
                 )
             }
             composable(AppView.Bids.name) {
+                viewModel.refreshUserBids()
                 BidsView(
                     uiState.userState as UserState.Bidder,
                     { auction, bid ->
                         viewModel.onAuctionClicked(auction, bid)
                         navController.navigate(AppView.MyBidAuctionDetails.name)
+                    },
+                    isRefreshing = uiState.isRefreshing,
+                    onRefresh = {
+                        viewModel.refreshUserBids(true)
                     }
                 )
             }
