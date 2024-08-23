@@ -73,7 +73,14 @@ fun textForTopBar(currentScreen: AppView, auctionState: AuctionFetchState, userS
     return when (currentScreen) {
         AppView.AuctionDetails,
         AppView.MyAuctionDetails,
-        AppView.MyBidAuctionDetails -> (auctionState as AuctionFetchState.AuctionSuccess).auction.objectName
+        AppView.MyBidAuctionDetails,
+        -> {
+            return when (auctionState) {
+                is AuctionFetchState.AuctionSuccess -> auctionState.auction.objectName
+                else -> stringResource(id = currentScreen.title)
+            }
+
+        }
         AppView.Profile -> {
             when (userState) {
                 is UserState.Vendor -> "@${userState.auctioneer.username}"
@@ -118,17 +125,21 @@ fun AppBottomBar(
 
 @Composable
 fun AuctionDetailsTopBarIcon(auctionState: AuctionFetchState) {
-    val auction = when (auctionState) {
-        is AuctionFetchState.AuctionSuccess -> auctionState.auction
+    when (auctionState) {
+        is AuctionFetchState.AuctionSuccess -> {
+            val auction = auctionState.auction
+            Icon(
+                painter = iconByAuctionType(auction = auction),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(32.dp)
+                    .padding(end = 8.dp)
+            )
+        }
+        is AuctionFetchState.Error -> {}
         else -> throw IllegalArgumentException("Unsupported auction state")
     }
-    Icon(
-        painter = iconByAuctionType(auction = auction),
-        contentDescription = null,
-        modifier = Modifier
-            .size(32.dp)
-            .padding(end = 8.dp)
-    )
+
 }
 
 @Preview
