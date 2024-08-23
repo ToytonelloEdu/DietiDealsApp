@@ -4,6 +4,8 @@ import android.content.ContentResolver
 import android.content.Context
 import android.net.Uri
 import com.example.dietideals.data.repos.ImagesRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileInputStream
 
@@ -15,12 +17,14 @@ class ImageUploadUseCase(
             uri, "r", null
         ) ?: throw IllegalArgumentException("Invalid file descriptor")
 
-        val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
-        val file = File(context.cacheDir, context.contentResolver.getFileName(uri))
-        val outputStream = file.outputStream()
-        inputStream.copyTo(outputStream)
+        withContext(Dispatchers.IO) {
+            val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
+            val file = File(context.cacheDir, context.contentResolver.getFileName(uri))
+            val outputStream = file.outputStream()
+            inputStream.copyTo(outputStream)
 
-        imagesRepository.uploadProfileImage(username, file)
+            imagesRepository.uploadProfileImage(username, file)
+        }
 
         parcelFileDescriptor.close()
     }
@@ -30,12 +34,14 @@ class ImageUploadUseCase(
             uri, "r", null
         ) ?: throw IllegalArgumentException("Invalid file descriptor")
 
-        val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
-        val file = File(context.cacheDir, context.contentResolver.getFileName(uri))
-        val outputStream = file.outputStream()
-        inputStream.copyTo(outputStream)
+        withContext(Dispatchers.IO) {
+            val inputStream = FileInputStream(parcelFileDescriptor.fileDescriptor)
+            val file = File(context.cacheDir, context.contentResolver.getFileName(uri))
+            val outputStream = file.outputStream()
+            inputStream.copyTo(outputStream)
 
-        imagesRepository.uploadAuctionImage(auctionId, imageIndex, file)
+            imagesRepository.uploadAuctionImage(auctionId, imageIndex, file)
+        }
 
         parcelFileDescriptor.close()
     }
