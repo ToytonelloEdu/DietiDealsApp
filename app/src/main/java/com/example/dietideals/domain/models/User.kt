@@ -1,6 +1,7 @@
 package com.example.dietideals.domain.models
 
-import com.example.dietideals.data.serializables.NetUser
+import com.example.dietideals.data.persistence.entities.DbOwnUser
+import com.example.dietideals.data.network.serializables.NetUser
 import java.sql.Timestamp
 
 abstract class User (
@@ -16,4 +17,5 @@ abstract class User (
     open val birthdate: Timestamp? = null
 ) {
     abstract fun toNetUser(): NetUser
+    abstract fun toDbUser(): DbOwnUser
 }

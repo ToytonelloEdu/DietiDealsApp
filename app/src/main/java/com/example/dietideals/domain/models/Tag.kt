@@ -1,6 +1,6 @@
 package com.example.dietideals.domain.models
 
-import com.example.dietideals.data.serializables.NetTag
+import com.example.dietideals.data.network.serializables.NetTag
 
 data class Tag (
     val tagName: String,

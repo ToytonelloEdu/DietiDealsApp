@@ -1,10 +1,8 @@
 package com.example.dietideals.domain.models
 
-import com.example.dietideals.data.serializables.NetUser
+import com.example.dietideals.data.persistence.entities.DbOwnUser
+import com.example.dietideals.data.network.serializables.NetUser
 import java.sql.Timestamp
-import java.text.DateFormatSymbols
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 data class Buyer(
     override val username: String,
@@ -35,6 +33,22 @@ data class Buyer(
         user.bids?.map { Bid(it) } ?: emptyList()
     )
 
+    constructor(user: DbOwnUser) : this(
+        user.username,
+        user.email,
+        user.password,
+        user.firstName,
+        user.lastName,
+        user.proPicPath,
+        user.bio,
+        user.nationality,
+        user.gender,
+        user.birthdate?.let {
+            Timestamp.valueOf(it.replace("Z[UTC]", "").replaceFirst("T", " "))
+        }.also { if (it == null) throw IllegalArgumentException("Birthdate is null") },
+        emptyList()
+    )
+
     override fun toNetUser(): NetUser {
         return NetUser(
             username = username,
@@ -49,6 +63,22 @@ data class Buyer(
             birthdate = birthdate.toString().replace(" ", "T") + "Z[UTC]",
             bids = emptyList(),
             auctions = null,
+            userType = "Buyer"
+        )
+    }
+
+    override fun toDbUser(): DbOwnUser {
+        return DbOwnUser(
+            username = username,
+            email = email,
+            password = password,
+            firstName = firstName,
+            lastName = lastName,
+            proPicPath = proPicPath,
+            bio = bio,
+            nationality = nationality,
+            gender = gender,
+            birthdate = birthdate.toString().replace(" ", "T") + "Z[UTC]",
             userType = "Buyer"
         )
     }

@@ -1,8 +1,9 @@
 package com.example.dietideals.domain.models
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import com.example.dietideals.data.persistence.entities.DbAuction
-import com.example.dietideals.data.serializables.NetAuction
+import com.example.dietideals.data.network.serializables.NetAuction
 import java.sql.Timestamp
 import java.util.Date
 
@@ -44,8 +45,8 @@ data class SilentAuction (
 
     constructor(dbAuction: DbAuction) : this(
         dbAuction.id,
-        emptyList(),
-        null,
+        listOf(dbAuction.picture),
+        dbAuction.medianColor?.let { Color(it.toLong(radix = 16)) },
         dbAuction.objectName,
         dbAuction.description,
         null,
@@ -92,6 +93,20 @@ data class SilentAuction (
             date = date.toString().replace(" ", "T") + "Z[UTC]",
             bids = emptyList(),
             tags = tags.map { it.toNetTag() },
+            expirationDate = expirationDate.toString().replace(" ", "T") + "Z[UTC]",
+            auctionType = "SilentAuction"
+        )
+    }
+
+    override fun toDbAuction(): DbAuction {
+        return DbAuction(
+            id = id!!,
+            picture = pictures.first(),
+            medianColor = medianColor?.toArgb()?.let{Integer.toHexString(it)},
+            objectName = objectName,
+            description = description,
+            auctioneerUsername = auctioneerUsername,
+            date = date.toString().replace(" ", "T") + "Z[UTC]",
             expirationDate = expirationDate.toString().replace(" ", "T") + "Z[UTC]",
             auctionType = "SilentAuction"
         )

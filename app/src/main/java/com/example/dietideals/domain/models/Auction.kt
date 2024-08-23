@@ -1,7 +1,8 @@
 package com.example.dietideals.domain.models
 
 import androidx.compose.ui.graphics.Color
-import com.example.dietideals.data.serializables.NetAuction
+import com.example.dietideals.data.persistence.entities.DbAuction
+import com.example.dietideals.data.network.serializables.NetAuction
 import java.sql.Timestamp
 import java.util.Date
 
@@ -25,5 +26,6 @@ abstract class Auction(
 
     abstract fun hasBeenOverFor(days: Int) : Boolean
     abstract fun toNetAuction(): NetAuction
+    abstract fun toDbAuction(): DbAuction
 }
 

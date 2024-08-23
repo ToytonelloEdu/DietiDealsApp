@@ -1,8 +1,9 @@
 package com.example.dietideals.domain.models
 
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import com.example.dietideals.data.persistence.entities.DbAuction
-import com.example.dietideals.data.serializables.NetAuction
+import com.example.dietideals.data.network.serializables.NetAuction
 import com.example.dietideals.domain.auxiliary.Seconds
 import java.sql.Timestamp
 
@@ -46,8 +47,8 @@ data class IncrementalAuction (
 
     constructor(dbAuction: DbAuction) : this(
         dbAuction.id,
-        emptyList(),
-        null,
+        listOf(dbAuction.picture),
+        dbAuction.medianColor?.let { Color(it.toLong(radix = 16)) },
         dbAuction.objectName,
         dbAuction.description,
         null,
@@ -121,6 +122,23 @@ data class IncrementalAuction (
             bids = emptyList(),
             lastBid = null,
             tags = tags.map { it.toNetTag() },
+            timeInterval = timeInterval,
+            startingPrice = startingPrice,
+            raisingThreshold = raisingThreshold,
+            auctionType = "IncrementalAuction"
+        )
+    }
+
+    override fun toDbAuction(): DbAuction {
+        return DbAuction(
+            id = id!!,
+            picture = pictures.first(),
+            medianColor = medianColor?.toArgb()?.let{Integer.toHexString(it)},
+            objectName = objectName,
+            description = description,
+            auctioneerUsername = auctioneerUsername,
+            date = date.toString().replace(" ", "T") + "Z[UTC]",
+            lastBid = getLastBidOrBidsLast()?.toDbLastBid(),
             timeInterval = timeInterval,
             startingPrice = startingPrice,
             raisingThreshold = raisingThreshold,
