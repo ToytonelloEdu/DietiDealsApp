@@ -45,6 +45,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dietideals.R
@@ -54,7 +55,6 @@ import com.example.dietideals.ui.AppView
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.IncrementalAuction
 import com.example.dietideals.domain.models.SilentAuction
-import com.example.dietideals.domain.auxiliary.Seconds
 import com.example.dietideals.domain.auxiliary.UserType
 import com.example.dietideals.domain.models.Buyer
 import java.text.NumberFormat
@@ -195,29 +195,7 @@ fun BidIconButton(
         }
         Spacer(modifier = Modifier.width(8.dp))
         if (timeInterval != null) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceAround,
-                modifier = Modifier.padding(end = 8.dp)
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.clockplus_ic),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .padding(start = 8.dp)
-                        .size(24.dp)
-                )
-                Text(
-                    text = Seconds(timeInterval).toString(),
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier
-                        .padding(end = 8.dp)
-                        .padding(start = 2.dp),
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp
-                )
-            }
+            TimePlusIconText(timeInterval, primaryColor = Color.White)
         }
     }
 }
@@ -326,11 +304,18 @@ fun SignUpButton(onSignUp: () -> Unit, modifier: Modifier = Modifier, primaryCol
 }
 
 @Composable
-fun CancelButton(onCancel: () -> Unit, modifier: Modifier = Modifier, text: String = "Cancel", primaryColor: Color = MaterialTheme.colorScheme.tertiary) {
+fun CancelButton(
+    onCancel: () -> Unit,
+    modifier: Modifier = Modifier,
+    text: String = "Cancel",
+    primaryColor: Color = MaterialTheme.colorScheme.tertiary,
+    width: Dp = 100.dp,
+    height: Dp = 40.dp
+) {
     Box (
         modifier = modifier
             .shadow(2.dp, RoundedCornerShape(3.dp))
-            .size(100.dp, 40.dp)
+            .size(width, height)
             .background(primaryColor)
             .clickable { onCancel() },
         contentAlignment = Alignment.Center
@@ -340,13 +325,21 @@ fun CancelButton(onCancel: () -> Unit, modifier: Modifier = Modifier, text: Stri
 }
 
 @Composable
-fun ConfirmButton(onConfirm: () -> Unit, modifier: Modifier = Modifier, text: String = "Confirm", primaryColor: Color = MaterialTheme.colorScheme.primary) {
+fun ConfirmButton(
+    onConfirm: () -> Unit,
+    modifier: Modifier = Modifier,
+    text: String = "Confirm",
+    primaryColor: Color = MaterialTheme.colorScheme.primary,
+    enabled: Boolean = true,
+    width: Dp = 100.dp,
+    height: Dp = 40.dp
+) {
     Box (
         modifier = modifier
             .shadow(2.dp, RoundedCornerShape(3.dp))
-            .size(100.dp, 40.dp)
-            .background(primaryColor)
-            .clickable { onConfirm() },
+            .size(width, height)
+            .background(primaryColor.let { if (enabled) it else it.darken(0.4f) })
+            .clickable(enabled) { onConfirm() },
         contentAlignment = Alignment.Center
     ) {
         Text(text = text, color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)

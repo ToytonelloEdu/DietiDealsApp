@@ -60,7 +60,7 @@ sealed class SignUpState (val newUser: NewUser) {
 }
 
 sealed class NewAuctionState(val newAuction: NewAuction) {
-    class Initial(newAuction: NewAuction, val formInvalid: Boolean = false) : NewAuctionState(newAuction)
+    class Initial(newAuction: NewAuction, val formValid: Boolean = true) : NewAuctionState(newAuction)
     class Loading(newAuction: NewAuction) : NewAuctionState(newAuction)
     class Success(newAuction: NewAuction) : NewAuctionState(newAuction)
     class Error(newAuction: NewAuction, val message: String? = null) : NewAuctionState(newAuction)

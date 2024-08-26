@@ -93,7 +93,9 @@ fun NewAuctionView(
     onConfirmClick: (NewAuction) -> Unit,
     screenFraction: Float = 0.9f
 ) {
+    var showErrors by rememberSaveable { mutableStateOf(false) }
     if(newAuctionState is NewAuctionState.Error) {
+        showErrors = true
         NewAuctionErrorDialog(onValueChange, newAuction, newAuctionState)
     }
     if(newAuctionState is NewAuctionState.Loading) {
@@ -112,8 +114,8 @@ fun NewAuctionView(
         StaticFieldsRow(screenFraction, newAuction)
 
         TextField(
-            value = newAuction.objectName,
-            onValueChange = { newAuction.objectName = it; onValueChange(newAuction) },
+            value = newAuction.objectName.value,
+            onValueChange = { newAuction.objectName.value = it; onValueChange(newAuction) },
             label = { Text("Object name") },
             leadingIcon = {
                 Icon(
@@ -125,14 +127,23 @@ fun NewAuctionView(
                         .padding(4.dp)
                 )
             },
+            isError = showErrors && !newAuction.objectName.isValid,
+            supportingText = {
+                if (showErrors && !newAuction.objectName.isValid) {
+                    Text(
+                        text = newAuction.objectName.message,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
             singleLine = true,
             modifier = Modifier
                 .fillMaxWidth(screenFraction)
         )
 
         TextField(
-            value = newAuction.description,
-            onValueChange = { newAuction.description = it; onValueChange(newAuction) },
+            value = newAuction.description.value,
+            onValueChange = { newAuction.description.value = it; onValueChange(newAuction) },
             label = { Text("Description") },
             leadingIcon = {
                 Icon(
@@ -144,6 +155,15 @@ fun NewAuctionView(
                 )
             },
             singleLine = false,
+            isError = showErrors && !newAuction.description.isValid,
+            supportingText = {
+                if (showErrors && !newAuction.description.isValid) {
+                    Text(
+                        text = newAuction.description.message,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
             modifier = Modifier
                 .fillMaxWidth(screenFraction)
                 .height(80.dp)
@@ -153,7 +173,7 @@ fun NewAuctionView(
         TagPillsRow(screenFraction, newAuction, onValueChange)
 
         var selectedIndex: Int? by rememberSaveable {
-            mutableStateOf(newAuction.auctionType?.index)
+            mutableStateOf(newAuction.auctionType.value?.index)
         }
         val options = listOf(AuctionType.IncrementalAuction, AuctionType.SilentAuction)
         SingleChoiceSegmentedButtonRow (
@@ -162,7 +182,7 @@ fun NewAuctionView(
         ) {
             options.forEachIndexed { index, auctionType ->
                 SegmentedButton(
-                    onClick = { selectedIndex = index; newAuction.auctionType = auctionType; onValueChange(newAuction) },
+                    onClick = { selectedIndex = index; newAuction.auctionType.value = auctionType; onValueChange(newAuction) },
                     selected = (index == selectedIndex),
                     shape = SegmentedButtonDefaults.itemShape(index, options.size),
                     colors = SegmentedButtonDefaults.colors().copy(
@@ -204,7 +224,7 @@ fun NewAuctionView(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     CancelButton(onCancel = exitView)
-                    ConfirmButton(onConfirm = { onConfirmClick(newAuction) })
+                    ConfirmButton(onConfirm = { onConfirmClick(newAuction) },)
                 }
             }
         }
@@ -226,12 +246,12 @@ private fun StaticFieldsRow(
         verticalAlignment = Alignment.CenterVertically
     ) {
         AuctioneerIconText(
-            auctioneer = newAuction.auctioneer!!.username,
+            auctioneer = newAuction.auctioneer.value!!.username,
             primaryColor = MaterialTheme.colorScheme.primary,
             underlineDistance = 4.dp
         )
         CalendarIconText(
-            date = newAuction.date,
+            date = newAuction.date.value,
             primaryColor = MaterialTheme.colorScheme.primary
         )
     }
@@ -350,11 +370,13 @@ private fun TagPillsRow(
                     value = newTag,
                     onValueChange = {newTag = it}
                 )
-                ConfirmButton(onConfirm = {
-                    newAuction.tags.add(Tag(newTag))
-                    onValueChange(newAuction)
-                    showDialog = false
-                })
+                ConfirmButton(
+                    onConfirm = {
+                        newAuction.tags.add(Tag(newTag))
+                        onValueChange(newAuction)
+                        showDialog = false
+                    },
+                )
             }
         }
     }
@@ -375,19 +397,18 @@ fun IncrementalSpecificFields(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-
         TextField(
             value = startingPrice,
-            onValueChange = { startingPrice = it; ;newAuction.startingPrice = it.toDoubleOrNull(); onValueChange(newAuction) },
+            onValueChange = { startingPrice = it; ;newAuction.startingPrice.value = it.toDoubleOrNull(); onValueChange(newAuction) },
             label = { Text("Starting price", fontSize = 13.sp) },
             leadingIcon = { MoneyIcon(primaryColor = MaterialTheme.colorScheme.primary) },
             singleLine = true,
             modifier = Modifier.weight(0.4f),
-            isError = startingPrice != "" && startingPrice.toDoubleOrNull() == null,
+            isError = startingPrice != "" && !newAuction.startingPrice.isValid,
             supportingText = {
-                if (startingPrice != "" && startingPrice.toDoubleOrNull() == null) {
+                if (startingPrice != "" && !newAuction.startingPrice.isValid) {
                     Text(
-                        text = "Invalid price",
+                        text = newAuction.startingPrice.message,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -396,16 +417,16 @@ fun IncrementalSpecificFields(
         Spacer(modifier = Modifier.width(8.dp))
         TextField(
             value = raisingThreshold,
-            onValueChange = {raisingThreshold = it ;newAuction.raisingThreshold = it.toDoubleOrNull(); onValueChange(newAuction) },
+            onValueChange = {raisingThreshold = it ;newAuction.raisingThreshold.value = it.toDoubleOrNull(); onValueChange(newAuction) },
             label = { Text("Bid increment", fontSize = 13.sp) },
             leadingIcon = { MoneyPlusIcon() },
             singleLine = true,
             modifier = Modifier.weight(0.4f),
-            isError = raisingThreshold != "" && raisingThreshold.toDoubleOrNull() == null,
+            isError = raisingThreshold != "" && !newAuction.raisingThreshold.isValid,
             supportingText = {
-                if (raisingThreshold != "" &&raisingThreshold.toDoubleOrNull() == null) {
+                if (raisingThreshold != "" && !newAuction.raisingThreshold.isValid) {
                     Text(
-                        text = "Invalid price",
+                        text = newAuction.raisingThreshold.message,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -414,15 +435,24 @@ fun IncrementalSpecificFields(
     }
     TextField(
         value = timeInterval,
-        suffix = { Text("s (${newAuction.timeInterval ?: "00:00"})") },
+        suffix = { Text("s (${newAuction.timeInterval.value ?: "00:00"})") },
         onValueChange = { value ->
             timeInterval = value
-            newAuction.timeInterval = value.toIntOrNull().let { if (it != null) Seconds(it) else null }
+            newAuction.timeInterval.value = value.toIntOrNull().let { if (it != null) Seconds(it) else null }
             onValueChange(newAuction)
         },
         label = { Text("Next Bid interval") },
         leadingIcon = { TimerIcon(primaryColor = MaterialTheme.colorScheme.primary)},
         singleLine = true,
+        isError = timeInterval != "" && !newAuction.timeInterval.isValid,
+        supportingText = {
+            if (timeInterval != "" && !newAuction.timeInterval.isValid) {
+                Text(
+                    text = newAuction.timeInterval.message,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        },
         modifier = Modifier
             .fillMaxWidth(screenFraction)
     )
@@ -437,13 +467,14 @@ fun SilentSpecificFields(newAuction: NewAuction, onValueChange: (NewAuction) -> 
 @Composable
 fun ExpiryDateSelector(newAuction: NewAuction, onValueChange: (NewAuction) -> Unit, modifier: Modifier = Modifier) {
     var showDialog by rememberSaveable { mutableStateOf(false) }
+    var showError by rememberSaveable { mutableStateOf(false) }
     val date = Date()
     val datePickerState = rememberDatePickerState(date.time, initialDisplayMode = DisplayMode.Input)
 
     TextField(
         readOnly = true,
         value = Date(datePickerState.selectedDateMillis!!).toYYYYFormattedDate(),
-        onValueChange = { onValueChange(newAuction) },
+        onValueChange = { showError = true; onValueChange(newAuction) },
         label = { Text("Expiry Date") },
         trailingIcon = {
             CalendarIcon(
@@ -452,6 +483,15 @@ fun ExpiryDateSelector(newAuction: NewAuction, onValueChange: (NewAuction) -> Un
                     .padding(16.dp),
                 primaryColor = MaterialTheme.colorScheme.primary
             )
+        },
+        isError = showError && !newAuction.expirationDate.isValid,
+        supportingText = {
+            if (showError && !newAuction.expirationDate.isValid) {
+                Text(
+                    text = newAuction.expirationDate.message,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
         },
         modifier = modifier
     )
@@ -462,16 +502,18 @@ fun ExpiryDateSelector(newAuction: NewAuction, onValueChange: (NewAuction) -> Un
         DatePickerDialog(
             onDismissRequest = {
                 showDialog = false
+                showError = true
                 datePickerState.displayMode = DisplayMode.Picker
-                newAuction.expirationDate = Date(datePickerState.selectedDateMillis!!)
+                newAuction.expirationDate.value = Date(datePickerState.selectedDateMillis!!)
                 onValueChange(newAuction)
             },
             confirmButton = {
                 TextButton(
                     onClick = {
                         showDialog = false
+                        showError = true
                         datePickerState.displayMode = DisplayMode.Picker
-                        newAuction.expirationDate = Date(datePickerState.selectedDateMillis!!)
+                        newAuction.expirationDate.value = Date(datePickerState.selectedDateMillis!!)
                         onValueChange(newAuction)
                     }
                 ) {

@@ -21,16 +21,19 @@ class AuctioneerUseCase(
     private val auctionsRepository: AuctionsRepository
 ) {
     suspend fun createNewAuction(state: MutableStateFlow<AppUiState>, newAuction: NewAuction, images: suspend (MutableList<Uri>, Auction) -> Unit) {
-        newAuction.date = Date()
-        newAuction.auctioneer = AuthenticationUseCase.user as Auctioneer
-        state.update { it.copy(newAuctionState = NewAuctionState.Loading(newAuction)) }
+        newAuction.date.value = Date()
+        newAuction.auctioneer.value = AuthenticationUseCase.user as Auctioneer
 
         try {
-
-            val auction = auctionsRepository.addAuction(newAuction.toAuction(), AuthenticationUseCase.token)
-
-            images(newAuction.picturePaths, auction)
-
+            if (!newAuction.isValid) throw IllegalArgumentException("Invalid auction")
+            state.update { it.copy(newAuctionState = NewAuctionState.Loading(newAuction)) }
+            withContext(Dispatchers.IO){
+                val auction = auctionsRepository.addAuction(
+                    newAuction.toAuction(),
+                    AuthenticationUseCase.token
+                )
+                images(newAuction.picturePaths, auction)
+            }
             state.update { currentState ->
                 currentState.copy(
                     newAuctionState = NewAuctionState.Success(newAuction)
@@ -38,19 +41,28 @@ class AuctioneerUseCase(
             }
 
             refreshAuctions(state)
-        } catch (e: NullPointerException) {
-            Log.e("AppViewModel", "Error: $e -> ${e.message}")
-            state.update { currentState ->
-                currentState.copy(
-                    newAuctionState = NewAuctionState.Error(newAuction,"Beware, some fields were left empty!")
-                )
-            }
         } catch (e: Exception) {
             Log.e("AppViewModel", "Error: ${e.message}")
-            state.update { currentState ->
-                currentState.copy(
-                    newAuctionState = NewAuctionState.Error(newAuction,"Error: $e -> ${e.message}")
-                )
+            when (e) {
+                is IllegalArgumentException, is NullPointerException -> {
+                    state.update { currentState ->
+                        currentState.copy(
+                            newAuctionState = NewAuctionState.Error(newAuction,"Beware, some fields were left empty or are invalid!")
+                        )
+                    }
+                }
+
+                else -> {
+
+                    state.update { currentState ->
+                        currentState.copy(
+                            newAuctionState = NewAuctionState.Error(
+                                newAuction,
+                                "Error: $e -> ${e.message}"
+                            )
+                        )
+                    }
+                }
             }
         }
     }

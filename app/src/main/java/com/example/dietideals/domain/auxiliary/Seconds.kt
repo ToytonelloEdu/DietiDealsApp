@@ -23,5 +23,9 @@ class Seconds (
         return seconds
     }
 
+    operator fun compareTo(i: Int): Int {
+        return seconds.compareTo(i)
+    }
+
 
 }

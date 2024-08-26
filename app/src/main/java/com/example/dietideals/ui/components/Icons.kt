@@ -257,3 +257,15 @@ fun TimerIcon(primaryColor: Color) {
             .size(18.dp)
     )
 }
+
+@Composable
+fun TimePlusIcon(primaryColor: Color = MaterialTheme.colorScheme.primary) {
+    Icon(
+        painter = painterResource(id = R.drawable.clockplus_ic),
+        contentDescription = null,
+        tint = primaryColor,
+        modifier = Modifier
+            .padding(start = 8.dp)
+            .size(24.dp)
+    )
+}

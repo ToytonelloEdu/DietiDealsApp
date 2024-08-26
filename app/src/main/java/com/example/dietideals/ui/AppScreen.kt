@@ -186,6 +186,7 @@ fun AppScreen(
             ) {
                 AuctionDetailsView(
                     currentState = uiState.currentAuctionState,
+                    directBid = uiState.isDirectBid,
                     onSubmit = { auction, amount ->
                         if(uiState.userState !is UserState.Bidder)
                             navController.navigate(AppView.LogIn.name)
@@ -197,7 +198,6 @@ fun AppScreen(
                 )
             }
             composable(AppView.Auctions.name) {
-                viewModel.refreshUserAuctions()
                 AuctionsView(
                     vendorUserState = uiState.userState as UserState.Vendor,
                     onAuctionClicked = { auction ->
@@ -221,7 +221,6 @@ fun AppScreen(
                 )
             }
             composable(AppView.Bids.name) {
-                viewModel.refreshUserBids()
                 BidsView(
                     uiState.userState as UserState.Bidder,
                     { auction, bid ->
@@ -241,6 +240,7 @@ fun AppScreen(
             ) {
                 AuctionDetailsView(
                     currentState = uiState.currentAuctionState,
+                    directBid = uiState.isDirectBid,
                     onSubmit = { _, _ ->}
                 )
             }
@@ -299,11 +299,7 @@ fun AppScreen(
                 val newAuction = uiState.newAuctionState.newAuction
                 NewAuctionView(
                     newAuction = newAuction,
-                    onValueChange = { passedAuction ->
-                        viewModel.onNewAuctionFormChanged(
-                            passedAuction
-                        )
-                    },
+                    onValueChange = { passedAuction -> viewModel.onNewAuctionFormChanged(passedAuction) },
                     newAuctionState = uiState.newAuctionState,
                     exitView = { navController.navigate(AppView.Auctions.name) },
                     onConfirmClick = { auction ->

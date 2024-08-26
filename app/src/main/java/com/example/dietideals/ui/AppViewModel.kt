@@ -16,6 +16,7 @@ import com.example.dietideals.domain.AuthenticationUseCase
 import com.example.dietideals.domain.BuyerUseCase
 import com.example.dietideals.domain.HomePageUseCase
 import com.example.dietideals.domain.ImageUploadUseCase
+import com.example.dietideals.domain.auxiliary.FormField
 import com.example.dietideals.domain.auxiliary.NewAuction
 import com.example.dietideals.domain.auxiliary.NewUser
 import com.example.dietideals.domain.models.Auction
@@ -77,7 +78,10 @@ class AppViewModel(
 
     fun onAuctionClicked(passedAuction: Auction, isDirectBid: Boolean) {
         _uiState.update { currentState ->
-            currentState.copy(currentAuctionState = AuctionFetchState.AuctionSuccess(passedAuction))
+            currentState.copy(
+                currentAuctionState = AuctionFetchState.AuctionSuccess(passedAuction),
+                isDirectBid = isDirectBid
+            )
         }
         viewModelScope.launch {
             homePageUseCase.getAuctionDetails(_uiState, passedAuction)
@@ -189,9 +193,10 @@ class AppViewModel(
 
     fun onNewAuctionClicked() {
         _uiState.update { currentState ->
+            val auctioneer = AuthenticationUseCase.user as Auctioneer
             currentState.copy(
                 newAuctionState = NewAuctionState.Initial(
-                    NewAuction(auctioneer = AuthenticationUseCase.user as Auctioneer)
+                    NewAuction(auctioneer = FormField(auctioneer) { it != null })
                 )
             )
         }

@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,9 +62,10 @@ enum class SignUpSteps{
 fun SignUpView(
     newUser: NewUser,
     onValueChange: (NewUser) -> Unit,
-    formInvalid: Boolean = false,
+    formInvalid: Boolean,
     onCancelClick: () -> Unit,
     onSignupClick: () -> Unit,
+    modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
     NavHost(
@@ -73,7 +75,7 @@ fun SignUpView(
         exitTransition = { ExitTransition.None },
         popEnterTransition = { EnterTransition.None },
         popExitTransition = { ExitTransition.None },
-        modifier = Modifier.fillMaxSize()
+        modifier = modifier.fillMaxSize()
     ) {
         composable(SignUpSteps.InsertInfo.name) {
             InsertInfoView(
@@ -130,43 +132,43 @@ fun InsertInfoView(
             )
             UsernameTextField(
                 label = "Username",
-                usernameValue = newUser.username,
-                onValueChange = { newUser.username = it; onValueChange(newUser) },
-                wrongCredentials = formInvalid,
-                textForError = "Username not available",
+                usernameValue = newUser.username.value,
+                onValueChange = { newUser.username.value = it; onValueChange(newUser) },
+                wrongCredentials = newUser.username.value != "" && !newUser.username.isValid,
+                textForError = newUser.username.message,
                 modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp)
             )
             NameTextField(
                 label = "Name",
-                nameValue = newUser.firstName,
-                onValueChange = { newUser.firstName = it; onValueChange(newUser) },
-                wrongCredentials = formInvalid,
-                textForError = "Name format not valid",
+                nameValue = newUser.firstName.value,
+                onValueChange = { newUser.firstName.value = it; onValueChange(newUser) },
+                wrongCredentials = newUser.firstName.value != "" && !newUser.firstName.isValid,
+                textForError = newUser.firstName.message,
                 modifier = Modifier.fillMaxWidth()
             )
             SurnameTextField(
                 label = "Surname",
-                surnameValue = newUser.lastName,
-                onValueChange = { newUser.lastName = it; onValueChange(newUser) },
-                wrongCredentials = formInvalid,
-                textForError = "Surname format not valid",
+                surnameValue = newUser.lastName.value,
+                onValueChange = { newUser.lastName.value = it; onValueChange(newUser) },
+                wrongCredentials = newUser.lastName.value != "" && !newUser.lastName.isValid,
+                textForError = newUser.lastName.message,
                 modifier = Modifier.fillMaxWidth()
             )
         }
         GenderSelector(
-            genderValue = newUser.gender,
-            onValueChange = { newUser.gender = it; onValueChange(newUser) },
+            genderValue = newUser.gender.value,
+            onValueChange = { newUser.gender.value = it; onValueChange(newUser) },
             Modifier.fillMaxWidth(screenFraction)
         )
         BirthdateSelector(
-            newUser.birthdate,
-            onValueChange = { newUser.birthdate = it; onValueChange(newUser) },
+            newUser.birthdate.value,
+            onValueChange = { newUser.birthdate.value = it; onValueChange(newUser) },
             modifier = Modifier
                 .fillMaxWidth(screenFraction)
         )
         UserTypeSelector(
-            userTypeValue = newUser.userType,
-            onValueChange = { newUser.userType = it; onValueChange(newUser) },
+            userTypeValue = newUser.userType.value,
+            onValueChange = { newUser.userType.value = it; onValueChange(newUser) },
             modifier = Modifier.fillMaxWidth(screenFraction)
         )
         Row(
@@ -176,7 +178,7 @@ fun InsertInfoView(
             verticalAlignment = Alignment.CenterVertically
         ) {
             CancelButton(onCancel = onCancelClick)
-            ConfirmButton(onConfirm = onNextClick, text = "Next")
+            ConfirmButton(onConfirm = onNextClick, text = "Next", enabled = newUser.firstHalfValid)
         }
     }
 }
@@ -209,11 +211,11 @@ fun InsertCredentialsView(
             )
         )
         EmailTextField(
-            handleValue = newUser.email,
-            onValueChange = { newUser.email = it; onValueChange(newUser) },
-            wrongCredentials = formInvalid,
             label = "Email",
-            textForError = "Email format not valid",
+            handleValue = newUser.email.value,
+            onValueChange = { newUser.email.value = it; onValueChange(newUser) },
+            wrongCredentials = newUser.email.value != "" && !newUser.email.isValid,
+            textForError = newUser.email.message,
             modifier = Modifier.fillMaxWidth(screenFraction)
         )
         Column(
@@ -223,22 +225,23 @@ fun InsertCredentialsView(
         ) {
             PasswordTextField(
                 label = "Password",
-                passwordValue = newUser.password,
-                onValueChange = { newUser.password = it; onValueChange(newUser) },
+                passwordValue = newUser.password.value,
+                onValueChange = { newUser.password.value = it; onValueChange(newUser) },
                 passwordVisible = passwordVisible,
                 onVisibilityClick = { passwordVisible = !passwordVisible },
-                wrongCredentials = formInvalid,
-                textForError = "Password format not valid",
-                Modifier.fillMaxWidth(screenFraction)
+                wrongCredentials = newUser.password.value != "" && !newUser.password.isValid,
+                textForError = newUser.password.message,
+                Modifier.fillMaxWidth(screenFraction),
+                imeAction = ImeAction.Next
             )
             PasswordTextField(
                 label = "Confirm password",
-                passwordValue = newUser.passwordConfirm,
-                onValueChange = { newUser.passwordConfirm = it; onValueChange(newUser) },
+                passwordValue = newUser.passwordConfirm.value,
+                onValueChange = { newUser.passwordConfirm.value = it; onValueChange(newUser) },
                 passwordVisible = passwordVisible,
                 onVisibilityClick = { passwordVisible = !passwordVisible },
-                wrongCredentials = formInvalid,
-                textForError = "Passwords are different",
+                wrongCredentials = newUser.passwordConfirm.value != "" && !newUser.passwordConfirm.isValid,
+                textForError = newUser.passwordConfirm.message,
                 Modifier.fillMaxWidth(screenFraction)
             )
         }
@@ -249,7 +252,7 @@ fun InsertCredentialsView(
             verticalAlignment = Alignment.CenterVertically
         ) {
             CancelButton(onCancel = onBackClick, text = "Back")
-            ConfirmButton(onConfirm = onSignupClick)
+            ConfirmButton(onConfirm = onSignupClick, enabled = newUser.secondHalfValid)
         }
     }
 }
@@ -330,5 +333,5 @@ fun BirthdateSelector(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun SignUpViewPreview() {
-    SignUpView(onSignupClick = {}, onCancelClick = {}, newUser = NewUser(), onValueChange = {_ ->})
+    SignUpView(onSignupClick = {}, onCancelClick = {}, newUser = NewUser(), onValueChange = {_ ->}, formInvalid = false)
 }

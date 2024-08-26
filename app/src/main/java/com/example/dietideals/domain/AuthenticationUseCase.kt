@@ -28,11 +28,12 @@ class AuthenticationUseCase (
             currentState.copy(signUpState = SignUpState.Loading(newUser))
         }
         try {
+            if (!newUser.isValid) throw IllegalArgumentException("Invalid user")
             authRepo.signup(newUser.toUser())
             state.update { currentState ->
-                currentState.copy(signUpState = SignUpState.Success(newUser))
+                currentState.copy(signUpState = SignUpState.Success(NewUser()))
             }
-            logIn(state, newUser.username, newUser.password)
+            logIn(state, newUser.username.value, newUser.password.value)
         } catch (e: Exception) {
             Log.e("AppViewModel", "Error: ${e.message}")
             state.update { currentState ->

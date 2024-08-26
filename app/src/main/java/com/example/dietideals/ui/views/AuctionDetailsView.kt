@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,6 +31,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -52,6 +54,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.dietideals.R
@@ -64,6 +67,8 @@ import com.example.dietideals.ui.AuctionFetchState
 import com.example.dietideals.ui.components.AuctioneerIconText
 import com.example.dietideals.ui.components.BidIconButton
 import com.example.dietideals.ui.components.CalendarIconText
+import com.example.dietideals.ui.components.CancelButton
+import com.example.dietideals.ui.components.ConfirmButton
 import com.example.dietideals.ui.components.DateIconText
 import com.example.dietideals.ui.components.LoadingView
 import com.example.dietideals.ui.components.MoneyIcon
@@ -72,14 +77,16 @@ import com.example.dietideals.ui.components.PreviousIcon
 import com.example.dietideals.ui.components.PriceIconText
 import com.example.dietideals.ui.components.SubmitButton
 import com.example.dietideals.ui.components.TagIcon
+import com.example.dietideals.ui.components.TimePlusIconText
 import com.example.dietideals.ui.components.TimerIconText
 import com.example.dietideals.ui.components.UnderLine
 import com.example.dietideals.ui.theme.primaryLight
+import kotlinx.coroutines.delay
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuctionDetailsView(
     currentState: AuctionFetchState,
+    directBid: Boolean,
     onSubmit: (Auction, Double) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -91,76 +98,20 @@ fun AuctionDetailsView(
             val primaryColor = auction.medianColor ?: MaterialTheme.colorScheme.primary
             SuccessAuctionDetails(currentState, primaryColor) { auct ->
                 Column (Modifier.fillMaxWidth(), Arrangement.Center, Alignment.CenterHorizontally) {
+
                     AuctionInteractionCard(
                         primaryColor = primaryColor,
-                        cardContent = {
-                            when (auct) {
-                                is IncrementalAuction -> AuctionInteraction(auct, primaryColor, onSubmit)
-                                is SilentAuction -> AuctionInteraction(auct, primaryColor, onSubmit)
-                            }
-                        }
-                    )
-
-                    if(auct is IncrementalAuction) {
-                        var showBids by rememberSaveable { mutableStateOf(false) }
-                        ShowBidsButton(showBids, { showBids = !showBids }, Modifier)
-                        if (showBids) {
-                            ModalBottomSheet(
-                                onDismissRequest = { showBids = false },
-                                modifier = Modifier.fillMaxHeight()
-                            ) {
-                                Text(
-                                    text = "Offers history:",
-                                    fontWeight = FontWeight.ExtraBold,
-                                    fontSize = 18.sp,
-                                    color = primaryColor,
-                                    textAlign = TextAlign.Start,
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(8.dp)
-                                )
-                                LazyColumn(
-                                    modifier = Modifier.fillMaxWidth().padding(8.dp),
-                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.Top
-                                ) {
-                                    items(auct.bids.size) {
-                                        val reverseIndex = (auct.bids.size - 1) - it
-                                        IncrementalBidPill(
-                                            auct,
-                                            auct.bids[reverseIndex],
-                                            it,
-                                            primaryColor = primaryColor
-                                        )
-                                    }
-                                }
-                            }
+                    ) {
+                        when (auct) {
+                            is IncrementalAuction -> AuctionInteraction(auct, primaryColor, directBid, onSubmit)
+                            is SilentAuction -> AuctionInteraction(auct, primaryColor, onSubmit)
                         }
                     }
+
+                    if(auct is IncrementalAuction) IncrementalBidsModalSheet(primaryColor, auct)
                 }
             }
         }
-    }
-}
-
-@Composable
-fun ShowBidsButton(showBids: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    Row (
-        modifier = modifier
-            .padding(8.dp)
-            .clickable { onClick() },
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        PreviousIcon(primaryColor = MaterialTheme.colorScheme.tertiary)
-        Text(
-            text = "Show previous offers",
-            color = MaterialTheme.colorScheme.tertiary,
-            modifier = Modifier.padding(horizontal = 8.dp),
-            fontSize = 18.sp,
-            fontWeight = FontWeight.SemiBold,
-            fontStyle = FontStyle.Italic
-        )
     }
 }
 
@@ -173,7 +124,7 @@ fun SuccessAuctionDetails(
 ) {
     val auction = successState.auction;
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -182,6 +133,7 @@ fun SuccessAuctionDetails(
         AuctionInfoColumn(auction, primaryColor, auction.pictures)
         centerContent(auction)
         AuctionTagsGrid(auction.tags, primaryColor)
+
     }
 }
 
@@ -300,6 +252,7 @@ fun AuctionInteractionCard(
 fun AuctionInteraction(
     auction: IncrementalAuction,
     primaryColor: Color,
+    directBid: Boolean = false,
     onSubmit: (Auction, Double) -> Unit
 ) {
     Text(
@@ -312,7 +265,7 @@ fun AuctionInteraction(
             .fillMaxWidth(),
     )
     BidsInfoFields(auction, primaryColor)
-    BidInteraction(auction, primaryColor, onSubmit)
+    BidInteraction(auction, primaryColor, directBid, onSubmit)
 }
 
 @Composable
@@ -329,8 +282,6 @@ fun BidsInfoFields(auction: IncrementalAuction, primaryColor: Color) {
         LastBidRow(auction, primaryColor)
     }
 }
-
-
 
 @Composable
 private fun StartBidRow(auction: IncrementalAuction, primaryColor: Color) {
@@ -352,6 +303,8 @@ private fun StartBidRow(auction: IncrementalAuction, primaryColor: Color) {
         }
     }
 }
+
+
 
 @Composable
 private fun LastBidRow(auction: IncrementalAuction, primaryColor: Color) {
@@ -385,7 +338,7 @@ private fun LastBidRow(auction: IncrementalAuction, primaryColor: Color) {
 }
 
 @Composable
-fun BidInteraction(auction: IncrementalAuction, primaryColor: Color, onSubmit: (Auction, Double) -> Unit) {
+fun BidInteraction(auction: IncrementalAuction, primaryColor: Color, directBid: Boolean = false, onSubmit: (Auction, Double) -> Unit) {
     Row (
         modifier = Modifier
             .fillMaxWidth()
@@ -393,8 +346,73 @@ fun BidInteraction(auction: IncrementalAuction, primaryColor: Color, onSubmit: (
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
+        var showConfirm by rememberSaveable { mutableStateOf(directBid) }
         TimerIconText(auction, primaryColor, underlineDistance = 4.dp, updating = true)
-        BidIconButton(auction, primaryColor, { _, _ -> onSubmit(auction, auction.calculateNextAmount()) }, timeInterval = auction.timeInterval)
+        BidIconButton(auction, primaryColor, {_,_ -> showConfirm = true }, timeInterval = auction.timeInterval)
+
+        var showDialog by rememberSaveable { mutableStateOf(false) }
+        LaunchedEffect(showConfirm) {
+            if(showConfirm) delay(800)
+
+            showDialog = showConfirm
+        }
+
+        if(showDialog) {
+            IncrementalConfirmDialog({ showDialog = false; showConfirm = false }, primaryColor, auction, onSubmit)
+        }
+    }
+}
+
+@Composable
+private fun IncrementalConfirmDialog(
+    onDismiss: () -> Unit,
+    primaryColor: Color,
+    auction: IncrementalAuction,
+    onSubmit: (Auction, Double) -> Unit,
+) {
+    Dialog(onDismissRequest = onDismiss) {
+        Column(
+            modifier = Modifier
+                .size(200.dp, 200.dp)
+                .background(Color.White)
+                .border(1.dp, primaryColor),
+            horizontalAlignment = Alignment.Start,
+            verticalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterVertically)
+        ) {
+            Text("Bid Summary", modifier = Modifier.padding(start = 8.dp))
+            PriceIconText(
+                amount = auction.calculateNextAmount(),
+                primaryColor = primaryColor,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+            TimePlusIconText(
+                timeInterval = auction.timeInterval,
+                primaryColor = primaryColor,
+                textColor = Color.Unspecified,
+                fontWeight = null,
+                underLine = true,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(0.9f).padding(start = 8.dp)
+            ) {
+                Text("Confirm")
+                ConfirmButton(
+                    onConfirm = { onSubmit(auction, auction.calculateNextAmount()) },
+                    text = "Yes",
+                    modifier = Modifier.width(40.dp),
+                    width = Dp.Unspecified
+                )
+                CancelButton(
+                    onCancel = { onDismiss() },
+                    text = "No",
+                    modifier = Modifier.width(40.dp),
+                    width = Dp.Unspecified
+                )
+            }
+        }
     }
 }
 
@@ -452,6 +470,71 @@ fun ExpLabelIconText(auction: SilentAuction, primaryColor: Color) {
             fontWeight = FontWeight.SemiBold
         )
         CalendarIconText(auction, primaryColor, underlineLength = 136.dp)
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun IncrementalBidsModalSheet(
+    primaryColor: Color,
+    auction: IncrementalAuction,
+) {
+    var showBids by rememberSaveable { mutableStateOf(false) }
+    ShowBidsButton(showBids, { showBids = !showBids }, Modifier)
+    if (showBids) {
+        ModalBottomSheet(
+            onDismissRequest = { showBids = false },
+            modifier = Modifier.fillMaxHeight()
+        ) {
+            Text(
+                text = "Offers history:",
+                fontWeight = FontWeight.ExtraBold,
+                fontSize = 18.sp,
+                color = primaryColor,
+                textAlign = TextAlign.Start,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Top
+            ) {
+                items(auction.bids.size) {
+                    val reverseIndex = (auction.bids.size - 1) - it
+                    IncrementalBidPill(
+                        auction,
+                        auction.bids[reverseIndex],
+                        it,
+                        primaryColor = primaryColor
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ShowBidsButton(showBids: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Row (
+        modifier = modifier
+            .padding(8.dp)
+            .clickable { onClick() },
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        PreviousIcon(primaryColor = MaterialTheme.colorScheme.tertiary)
+        Text(
+            text = "Show previous offers",
+            color = MaterialTheme.colorScheme.tertiary,
+            modifier = Modifier.padding(horizontal = 8.dp),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.SemiBold,
+            fontStyle = FontStyle.Italic
+        )
     }
 }
 

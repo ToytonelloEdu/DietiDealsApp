@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.dietideals.R
+import com.example.dietideals.domain.auxiliary.Seconds
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.Bid
 import com.example.dietideals.domain.models.IncrementalAuction
@@ -155,7 +156,8 @@ fun PriceIconText(
 ) {
     Column (
         verticalArrangement = Arrangement.SpaceAround,
-        horizontalAlignment = Alignment.Start
+        horizontalAlignment = Alignment.Start,
+        modifier = modifier
     ){
         Row (
             verticalAlignment = Alignment.CenterVertically,
@@ -481,4 +483,37 @@ fun BuyerIconText(buyer: String, primaryColor: Color) {
         Spacer(modifier = Modifier.width(12.dp))
         Text(text = buyer, fontWeight = FontWeight.Medium)
     }
+}
+
+@Composable
+fun TimePlusIconText(
+    timeInterval: Int,
+    modifier: Modifier = Modifier,
+    primaryColor: Color = MaterialTheme.colorScheme.primary,
+    textColor: Color = MaterialTheme.colorScheme.onPrimary,
+    fontWeight: FontWeight? = FontWeight.SemiBold,
+    underLine: Boolean = false
+) {
+        Column (
+            verticalArrangement = Arrangement.SpaceAround,
+            horizontalAlignment = Alignment.Start,
+            modifier = modifier
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                TimePlusIcon(primaryColor)
+                Text(
+                    text = Seconds(timeInterval).toString(),
+                    color = textColor,
+                    modifier = Modifier
+                        .padding(end = 8.dp)
+                        .padding(start = 2.dp),
+                    fontWeight = fontWeight,
+                    fontSize = 15.sp
+                )
+            }
+            if (underLine) UnderLine(primaryColor, length = 100.dp)
+        }
 }
