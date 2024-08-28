@@ -348,19 +348,19 @@ fun BidInteraction(auction: IncrementalAuction, primaryColor: Color, directBid: 
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        var showConfirm by rememberSaveable { mutableStateOf(directBid) }
-        TimerIconText(auction, primaryColor, underlineDistance = 4.dp, updating = true)
-        BidIconButton(auction, primaryColor, {_,_ -> showConfirm = true }, timeInterval = auction.timeInterval)
-
+        var stateDirectBid by rememberSaveable { mutableStateOf(directBid) }
         var showDialog by rememberSaveable { mutableStateOf(false) }
-        LaunchedEffect(showConfirm) {
-            if(showConfirm) delay(800)
+        TimerIconText(auction, primaryColor, underlineDistance = 4.dp, updating = true)
+        BidIconButton(auction, primaryColor, {_,_ -> showDialog = true }, timeInterval = auction.timeInterval)
 
-            showDialog = showConfirm
+        LaunchedEffect(stateDirectBid) {
+            if(stateDirectBid) delay(800)
+
+            showDialog = stateDirectBid
         }
 
         if(showDialog) {
-            IncrementalConfirmDialog({ showDialog = false; showConfirm = false }, primaryColor, auction, onSubmit)
+            IncrementalConfirmDialog({ showDialog = false; stateDirectBid = false }, primaryColor, auction, onSubmit)
         }
     }
 }
