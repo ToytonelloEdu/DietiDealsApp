@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -346,19 +348,19 @@ fun BidInteraction(auction: IncrementalAuction, primaryColor: Color, directBid: 
         horizontalArrangement = Arrangement.SpaceAround,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        var showConfirm by rememberSaveable { mutableStateOf(directBid) }
-        TimerIconText(auction, primaryColor, underlineDistance = 4.dp, updating = true)
-        BidIconButton(auction, primaryColor, {_,_ -> showConfirm = true }, timeInterval = auction.timeInterval)
-
+        var stateDirectBid by rememberSaveable { mutableStateOf(directBid) }
         var showDialog by rememberSaveable { mutableStateOf(false) }
-        LaunchedEffect(showConfirm) {
-            if(showConfirm) delay(800)
+        TimerIconText(auction, primaryColor, underlineDistance = 4.dp, updating = true)
+        BidIconButton(auction, primaryColor, {_,_ -> showDialog = true }, timeInterval = auction.timeInterval)
 
-            showDialog = showConfirm
+        LaunchedEffect(stateDirectBid) {
+            if(stateDirectBid) delay(800)
+
+            showDialog = stateDirectBid
         }
 
         if(showDialog) {
-            IncrementalConfirmDialog({ showDialog = false; showConfirm = false }, primaryColor, auction, onSubmit)
+            IncrementalConfirmDialog({ showDialog = false; stateDirectBid = false }, primaryColor, auction, onSubmit)
         }
     }
 }
@@ -396,7 +398,9 @@ private fun IncrementalConfirmDialog(
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth(0.9f).padding(start = 8.dp)
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .padding(start = 8.dp)
             ) {
                 Text("Confirm")
                 ConfirmButton(
@@ -582,26 +586,17 @@ fun TagsIconLabel(
     }
 }
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TagsLazyStaggeredGrid(tags: List<Tag>, primaryColor: Color, modifier: Modifier = Modifier) {
     if(tags.isNotEmpty()) {
-        val tagsRows = tags.chunked(4)
-        Column (
-            modifier = modifier
-                .wrapContentHeight()
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
-            horizontalAlignment = Alignment.Start
+        FlowRow (
+            modifier = modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(6.dp, Alignment.CenterVertically),
+            horizontalArrangement = Arrangement.spacedBy(6.dp, Alignment.Start),
         ) {
-            tagsRows.forEach {
-                LazyRow(
-                    modifier = modifier.wrapContentHeight(),
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    items(it.size) { index ->
-                        TagPill(it[index], primaryColor)
-                    }
-                }
+            tags.forEach { tag ->
+                TagPill(tag, primaryColor)
             }
         }
     } else {

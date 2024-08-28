@@ -37,7 +37,7 @@ class AuthenticationUseCase (
         } catch (e: Exception) {
             Log.e("AppViewModel", "Error: ${e.message}")
             state.update { currentState ->
-                currentState.copy(signUpState = SignUpState.Error(newUser))
+                currentState.copy(signUpState = SignUpState.Error(newUser, e.message))
             }
         }
 
