@@ -38,7 +38,7 @@ fun SilentConfirmDialog(
     Dialog(onDismissRequest = onDismiss) {
         Column(
             modifier = Modifier
-                .size(180.dp, 180.dp)
+                .size(170.dp, 170.dp)
                 .background(Color.White)
                 .border(1.dp, primaryColor),
             horizontalAlignment = Alignment.Start,
