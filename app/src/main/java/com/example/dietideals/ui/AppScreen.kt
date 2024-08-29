@@ -31,6 +31,7 @@ import com.example.dietideals.ui.components.AuctionDetailsTopBarIcon
 import com.example.dietideals.ui.components.EditIcon
 import com.example.dietideals.ui.components.LogoutIconButton
 import com.example.dietideals.ui.components.NotifIconButton
+import com.example.dietideals.ui.components.OffileIcon
 import com.example.dietideals.ui.components.SearchIconButton
 import com.example.dietideals.ui.components.SettingsIconButton
 import com.example.dietideals.ui.components.textForTopBar
@@ -80,6 +81,9 @@ fun AppScreen(
                 navigateUp = { navController.navigateUp() },
                 textForTopBar = { textForTopBar(currentScreen, auctionState, userState) }
             ) {
+                if (!uiState.isOnline){
+                    OffileIcon()
+                }
                 if (currentScreen in listOf(
                         AppView.AuctionDetails,
                         AppView.MyAuctionDetails,
