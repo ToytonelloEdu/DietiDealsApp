@@ -269,3 +269,15 @@ fun TimePlusIcon(primaryColor: Color = MaterialTheme.colorScheme.primary) {
             .size(24.dp)
     )
 }
+
+@Composable
+fun OffileIcon() {
+    Icon(
+        painter = painterResource(id = R.drawable.ic_connection_error),
+        contentDescription = null,
+        tint = Color(0xFFBBBBBB),
+        modifier = Modifier
+            .size(35.dp)
+            .padding(4.dp)
+    )
+}
