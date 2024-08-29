@@ -20,7 +20,13 @@ import java.util.Date
 class AuctioneerUseCase(
     private val auctionsRepository: AuctionsRepository
 ) {
-    suspend fun createNewAuction(state: MutableStateFlow<AppUiState>, newAuction: NewAuction, images: suspend (MutableList<Uri>, Auction) -> Unit) {
+
+
+    suspend fun createNewAuction(
+        state: MutableStateFlow<AppUiState>,
+        newAuction: NewAuction,
+        images: suspend (MutableList<Uri>, Auction) -> Unit,
+    ) {
         newAuction.date.value = Date()
         newAuction.auctioneer.value = AuthenticationUseCase.user as Auctioneer
 
@@ -53,7 +59,6 @@ class AuctioneerUseCase(
                 }
 
                 else -> {
-
                     state.update { currentState ->
                         currentState.copy(
                             newAuctionState = NewAuctionState.Error(
@@ -78,12 +83,13 @@ class AuctioneerUseCase(
             state.update { currentState ->
                 currentState.copy(
                     userState = UserState.Vendor(auctioneer.copy(auctions = auctions.toMutableList())),
-                    isRefreshing = false
+                    isRefreshing = false,
+                    isOnline = true
                 )
             }
         } catch (e: Exception) {
             Log.e("AppViewModel", "Error: ${e.message}")
-            state.update { it.copy(isRefreshing = false) }
+            state.update { it.copy(isRefreshing = false, isOnline = false) }
         }
     }
 }

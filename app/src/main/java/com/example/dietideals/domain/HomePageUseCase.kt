@@ -51,7 +51,8 @@ class HomePageUseCase (
             val auctions = onlineAuctionsRepository.getAuctions()
             state.update { currentState ->
                 currentState.copy(
-                    currentHomeState = HomeFetchState.HomeSuccess(auctions)
+                    currentHomeState = HomeFetchState.HomeSuccess(auctions),
+                    isOnline = true
                 )
             }
             return true
@@ -60,7 +61,8 @@ class HomePageUseCase (
             val auctions = state.value.currentHomeState.getAuctionsOrNull() ?: emptyList()
             state.update { currentState ->
                 currentState.copy(
-                    currentHomeState = HomeFetchState.Error(auctions, message = e.message )
+                    currentHomeState = HomeFetchState.Error(auctions, message = e.message),
+                    isOnline = false
                 )
             }
             return false

@@ -4,12 +4,10 @@ import android.util.Log
 import com.example.dietideals.data.AppUiState
 import com.example.dietideals.data.repos.AuthRepository
 import com.example.dietideals.data.repos.UsersRepository
-import com.example.dietideals.domain.auxiliary.NewAuction
 import com.example.dietideals.domain.auxiliary.NewUser
 import com.example.dietideals.domain.models.Auctioneer
 import com.example.dietideals.domain.models.Buyer
 import com.example.dietideals.domain.models.User
-import com.example.dietideals.ui.NewAuctionState
 import com.example.dietideals.ui.SignUpState
 import com.example.dietideals.ui.UserState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -68,7 +66,6 @@ class AuthenticationUseCase (
     suspend fun rememberLogIn(state: MutableStateFlow<AppUiState>) {
             try {
                 val savedUser = offlineUsersRepo.getOwnUser()
-                Log.d("AppViewModel", "User: $savedUser")
 
                 user = savedUser
                 state.update { currentState ->
@@ -85,7 +82,7 @@ class AuthenticationUseCase (
             }
     }
 
-    suspend fun checkRemember(state: MutableStateFlow<AppUiState>) {
+    suspend fun checkToken(state: MutableStateFlow<AppUiState>) {
         if (user != null) {
             try {
                 authRepo.auth(user!!.username, user!!.password!!).let {
@@ -96,6 +93,7 @@ class AuthenticationUseCase (
                     logOut(state)
                 } else throw http
             } catch (e: Exception) {
+                Log.e("AppViewModel", "Error: ${e.message}")
                 state.update { currentState ->
                     currentState.copy(
                         isOnline = false
@@ -126,10 +124,7 @@ class AuthenticationUseCase (
         when (onlineUser) {
             is Auctioneer -> {
                 state.update { currentState ->
-                    currentState.copy(
-                        userState = UserState.Vendor(onlineUser)
-                    )
-
+                    currentState.copy(userState = UserState.Vendor(onlineUser))
                 }
                 offlineUsersRepo.addUser(onlineUser.copy(password = password))
             }
@@ -150,8 +145,9 @@ class AuthenticationUseCase (
             private set
 
         var token: String? = null
-            get() =
-                "Bearer $field"
+            get() = if (field == null) null
+                    else "Bearer $field"
+
             private set
     }
 }

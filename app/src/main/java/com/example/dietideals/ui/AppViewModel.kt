@@ -1,7 +1,8 @@
 package com.example.dietideals.ui
 
 import android.content.Context
-import android.util.Log
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -10,7 +11,6 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.dietideals.DietiDealsApplication
 import com.example.dietideals.data.AppUiState
-import com.example.dietideals.data.repos.BidsRepository
 import com.example.dietideals.domain.AuctioneerUseCase
 import com.example.dietideals.domain.AuthenticationUseCase
 import com.example.dietideals.domain.BuyerUseCase
@@ -21,15 +21,14 @@ import com.example.dietideals.domain.auxiliary.NewAuction
 import com.example.dietideals.domain.auxiliary.NewUser
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.Auctioneer
-import com.example.dietideals.domain.models.Bid
 import com.example.dietideals.domain.models.Buyer
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import java.sql.Timestamp
 
 
 class AppViewModel(
@@ -38,23 +37,21 @@ class AppViewModel(
     private val auctioneerUseCase: AuctioneerUseCase,
     private val buyerUseCase: BuyerUseCase,
     private val imageUploadUseCase: ImageUploadUseCase,
-    private val bidsRepository: BidsRepository,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AppUiState())
     val uiState: StateFlow<AppUiState> = _uiState.asStateFlow()
 
     private val auctions: List<Auction>
-        get() {
-            return (_uiState.value.currentHomeState.getAuctionsOrNull()) ?: emptyList()
-        }
+        get() = (_uiState.value.currentHomeState.getAuctionsOrNull()) ?: emptyList()
 
     init {
         runBlocking {
             authenticationUseCase.rememberLogIn(_uiState)
             viewModelScope.launch {
-                authenticationUseCase.checkRemember(_uiState)
+                authenticationUseCase.checkToken(_uiState)
                 refreshAuctionsOrBids()
             }
+
         }
         serverHomepageAuctions()
     }
@@ -122,6 +119,8 @@ class AppViewModel(
 
     fun onNewAuctionConfirm(newAuction: NewAuction, context: Context) {
         viewModelScope.launch {
+            if(AuthenticationUseCase.token == null) authenticationUseCase.checkToken(_uiState)
+
             auctioneerUseCase.createNewAuction(_uiState, newAuction) { uris, auction ->
                 uris.forEachIndexed { index, path ->
                     imageUploadUseCase.uploadAuctionImage(context, auction.id!!, index, path)
@@ -131,8 +130,7 @@ class AppViewModel(
     }
 
     fun refreshUserAuctions(swiped: Boolean = false) {
-        viewModelScope.launch(
-        ) {
+        viewModelScope.launch {
             if(swiped) _uiState.update { it.copy(isRefreshing = true) }
 
             auctioneerUseCase.refreshAuctions(_uiState)
@@ -147,41 +145,17 @@ class AppViewModel(
 
     fun onBidSubmit(auction: Auction, amount: Double) {
         viewModelScope.launch {
-            try {
-                val buyer = (uiState.value.userState as UserState.Bidder).buyer
-                val bid = Bid(
-                    auction = auction,
-                    buyer = buyer,
-                    bidder = buyer.username,
-                    amount = amount,
-                    time = Timestamp(System.currentTimeMillis())
-                )
-                bidsRepository.postBid(bid, AuthenticationUseCase.token)
-                refreshUserBids()
-            } catch (e: Exception) {
-                Log.e("AppViewModel", "Error: $e -> ${e.printStackTrace()}")
-            }
+            if(AuthenticationUseCase.token == null) authenticationUseCase.checkToken(_uiState)
+
+            buyerUseCase.createNewBid(_uiState, auction, amount)
         }
     }
 
     fun refreshUserBids(swiped: Boolean = false) {
         viewModelScope.launch {
             if(swiped) _uiState.update { it.copy(isRefreshing = true) }
-            try {
-                val buyer = (uiState.value.userState as UserState.Bidder).buyer
-                val bids = bidsRepository.getBidsByUser(buyer.username)
-                _uiState.update { currentState ->
-                    currentState.copy(
-                        userState = UserState.Bidder(buyer.copy(bids = bids.toMutableList())),
-                        isRefreshing = false
-                    )
-                }
-            } catch (e: Exception) {
-                Log.e("AppViewModel", "Error: ${e.message}")
-                _uiState.update {
-                    it.copy(isRefreshing = false)
-                }
-            }
+
+            buyerUseCase.refreshBids(_uiState)
         }
     }
 
@@ -214,14 +188,13 @@ class AppViewModel(
                 val authRepository = application.container.authRepository
                 val tagsRepository = application.container.tagsRepository
                 val imagesRepository = application.container.imagesRepository
-                val bidRepository = application.container.bidsRepository
+                val bidsRepository = application.container.bidsRepository
                 AppViewModel(
                     homePageUseCase = HomePageUseCase(auctionsRepository, offlineAuctionsRepository),
                     authenticationUseCase = AuthenticationUseCase(authRepository, usersRepository, offlineUsersRepository),
                     auctioneerUseCase = AuctioneerUseCase(auctionsRepository),
-                    buyerUseCase = BuyerUseCase(),
-                    imageUploadUseCase = ImageUploadUseCase(imagesRepository),
-                    bidsRepository = bidRepository
+                    buyerUseCase = BuyerUseCase(bidsRepository),
+                    imageUploadUseCase = ImageUploadUseCase(imagesRepository)
                 )
             }
         }
