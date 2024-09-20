@@ -1,6 +1,8 @@
 package com.example.dietideals.data
 
 import android.content.Context
+import androidx.compose.ui.res.stringResource
+import com.example.dietideals.R
 import com.example.dietideals.data.network.NetworkApiService
 import com.example.dietideals.data.persistence.AppDatabase
 import com.example.dietideals.data.repos.AuctionsRepository
@@ -33,13 +35,18 @@ interface AppContainer {
     val bidsRepository: BidsRepository
 }
 
-class RetrofitAppContainer : AppContainer {
+class RetrofitAppContainer(
+    val context: Context
+) : AppContainer {
 
-    private val baseUrl =
+
+    private val baseUrl = context.resources.getString(R.string.restapi_url)
+    //"http://13.53.197.230:8080/api/1.0/"
+    //"http://151.75.65.248:8080/api/1.0/"
     //"http://192.168.43.8:8080/api/1.0/"
     //"http://100.102.11.112:8080/api/1.0/"
     //"http://192.168.0.109:8080/api/1.0/"
-        "http://192.168.0.105:8080/api/1.0/"
+    //"http://192.168.0.105:8080/api/1.0/"
     //"http://192.168.0.101:8080/api/1.0/"
     //"http://192.168.42.82:8080/api/1.0/"
 

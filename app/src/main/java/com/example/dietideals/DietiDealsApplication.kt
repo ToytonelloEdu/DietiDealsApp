@@ -10,7 +10,7 @@ class DietiDealsApplication : Application() {
     lateinit var offlineContainer: AppContainer
     override fun onCreate() {
         super.onCreate()
-        container = RetrofitAppContainer()
+        container = RetrofitAppContainer(this)
         offlineContainer = RoomAppContainer(this)
     }
 }
