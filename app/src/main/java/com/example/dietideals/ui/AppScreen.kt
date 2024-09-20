@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -15,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -31,7 +33,9 @@ import com.example.dietideals.ui.components.AuctionDetailsTopBarIcon
 import com.example.dietideals.ui.components.EditIcon
 import com.example.dietideals.ui.components.LogoutIconButton
 import com.example.dietideals.ui.components.NotifIconButton
+import com.example.dietideals.ui.components.NotificationsDialog
 import com.example.dietideals.ui.components.OffileIcon
+import com.example.dietideals.ui.components.SearchDialog
 import com.example.dietideals.ui.components.SearchIconButton
 import com.example.dietideals.ui.components.SettingsIconButton
 import com.example.dietideals.ui.components.textForTopBar
@@ -81,7 +85,7 @@ fun AppScreen(
                 navigateUp = { navController.navigateUp() },
                 textForTopBar = { textForTopBar(currentScreen, auctionState, userState) }
             ) {
-                if (!uiState.isOnline){
+                if (!uiState.isOnline) {
                     OffileIcon()
                 }
                 if (currentScreen in listOf(
@@ -89,14 +93,19 @@ fun AppScreen(
                         AppView.MyAuctionDetails,
                         AppView.MyBidAuctionDetails
                     )
-                ){AuctionDetailsTopBarIcon(auctionState)}
+                ) {
+                    AuctionDetailsTopBarIcon(auctionState)
+                }
                 if (currentScreen == AppView.Home) {
-                    SearchIconButton { /*TODO*/ }
+                    SearchIconButton { viewModel.showSearchDialog() }
                 }
                 if (currentScreen in listOf(
                         AppView.Home,
                         AppView.Auctions,
-                )) { NotifIconButton { /*TODO*/ } }
+                    )
+                ) {
+                    NotifIconButton(enabled = uiState.userState !is UserState.NotLoggedIn) { viewModel.showNotificationsDialog() }
+                }
                 if (currentScreen == AppView.Profile) {
                     SettingsIconButton { }
                     LogoutIconButton { viewModel.onLogoutClicked() }
@@ -108,6 +117,7 @@ fun AppScreen(
             AppBottomBar(
                 currentScreen = currentScreen,
                 userState = uiState.userState,
+                navigationEnabled = viewModel.navigationEnabled,
                 onAuctionClick = {
                     when (uiState.userState) {
                         is UserState.NotLoggedIn -> {}
@@ -151,167 +161,230 @@ fun AppScreen(
         }
     ) {
 
-        NavHost(
-            navController = navController,
-            startDestination = AppView.Home.name,
+        Box (
             modifier = Modifier.padding(it),
-            enterTransition = { EnterTransition.None },
-            exitTransition = { ExitTransition.None },
-            popEnterTransition = { EnterTransition.None },
-            popExitTransition = { ExitTransition.None }
+            contentAlignment = Alignment.TopCenter
         ) {
-            composable(
-                AppView.Home.name,
+            NavHost(
+                navController = navController,
+                startDestination = AppView.Home.name,
                 enterTransition = { EnterTransition.None },
                 exitTransition = { ExitTransition.None },
                 popEnterTransition = { EnterTransition.None },
                 popExitTransition = { ExitTransition.None }
             ) {
-                if (uiState.userState is UserState.Vendor) navController.navigate(AppView.Auctions.name)
-                else {
-                    HomeView(
-                        uiState.currentHomeState,
-                        onAuctionClicked = { auction, bid ->
-                            if(bid && uiState.userState !is UserState.Bidder) navController.navigate(AppView.LogIn.name)
-                            else {
-                                viewModel.onAuctionClicked(auction, bid)
-                                navController.navigate(AppView.AuctionDetails.name)
-                            }
+                composable(
+                    AppView.Home.name,
+                    enterTransition = { EnterTransition.None },
+                    exitTransition = { ExitTransition.None },
+                    popEnterTransition = { EnterTransition.None },
+                    popExitTransition = { ExitTransition.None }
+                ) {
+                    if (uiState.userState is UserState.Vendor) navController.navigate(AppView.Auctions.name)
+                    else {
+                        HomeView(
+                            fetchState = uiState.currentHomeState,
+                            showAll = uiState.showAllAuctions,
+                            onAuctionClicked = { auction, bid ->
+                                if (bid && uiState.userState !is UserState.Bidder) navController.navigate(
+                                    AppView.LogIn.name
+                                )
+                                else {
+                                    viewModel.onAuctionClicked(auction, bid)
+                                    navController.navigate(AppView.AuctionDetails.name)
+                                }
 
-                        },
-                        onRefresh = { viewModel.refreshHomePage() }
+                            },
+                            onRefresh = { viewModel.refreshHomePage() }
+                        )
+                    }
+                }
+                composable(
+                    AppView.AuctionDetails.name,
+                    enterTransition = {
+                        return@composable slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Start,
+                            tween(700)
+                        )
+                    },
+                    popExitTransition = {
+                        return@composable slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.End,
+                            tween(700)
+                        )
+                    }
+                ) {
+                    AuctionDetailsView(
+                        currentState = uiState.currentAuctionState,
+                        directBid = uiState.isDirectBid,
+                        onSubmit = { auction, amount ->
+                            if (uiState.userState !is UserState.Bidder)
+                                navController.navigate(AppView.LogIn.name)
+                            else {
+                                viewModel.onBidSubmit(auction, amount)
+                                navController.navigate(AppView.Bids.name)
+                            }
+                        }
                     )
                 }
-            }
-            composable(
-                AppView.AuctionDetails.name,
-                enterTransition = {return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(700))},
-                popExitTransition = {return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(700))}
-            ) {
-                AuctionDetailsView(
-                    currentState = uiState.currentAuctionState,
-                    directBid = uiState.isDirectBid,
-                    onSubmit = { auction, amount ->
-                        if(uiState.userState !is UserState.Bidder)
-                            navController.navigate(AppView.LogIn.name)
-                        else {
-                            viewModel.onBidSubmit(auction, amount)
-                            navController.navigate(AppView.Bids.name)
+                composable(AppView.Auctions.name) {
+                    AuctionsView(
+                        vendorUserState = uiState.userState as UserState.Vendor,
+                        onAuctionClicked = { auction ->
+                            viewModel.onAuctionClicked(auction, false)
+                            navController.navigate(AppView.MyAuctionDetails.name)
+                        },
+                        isRefreshing = uiState.isRefreshing,
+                        onRefresh = {
+                            viewModel.refreshUserAuctions(true)
                         }
-                    }
-                )
-            }
-            composable(AppView.Auctions.name) {
-                AuctionsView(
-                    vendorUserState = uiState.userState as UserState.Vendor,
-                    onAuctionClicked = { auction ->
-                        viewModel.onAuctionClicked(auction, false)
-                        navController.navigate(AppView.MyAuctionDetails.name)
-                    },
-                    isRefreshing = uiState.isRefreshing,
-                    onRefresh = {
-                        viewModel.refreshUserAuctions(true)
-                    }
-                )
-            }
-            composable(
-                AppView.MyAuctionDetails.name,
-                enterTransition = {return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(700))},
-                popExitTransition = {return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(700))}
-            ) {
-                MyAuctionDetailsView(
-                    currentState = uiState.currentAuctionState,
-                    onAccept = {}
-                )
-            }
-            composable(AppView.Bids.name) {
-                BidsView(
-                    uiState.userState as UserState.Bidder,
-                    { auction, bid ->
-                        viewModel.onAuctionClicked(auction, bid)
-                        navController.navigate(AppView.MyBidAuctionDetails.name)
-                    },
-                    isRefreshing = uiState.isRefreshing,
-                    onRefresh = {
-                        viewModel.refreshUserBids(true)
-                    }
-                )
-            }
-            composable(
-                AppView.MyBidAuctionDetails.name,
-                enterTransition = {return@composable slideIntoContainer(AnimatedContentTransitionScope.SlideDirection.Start, tween(700))},
-                popExitTransition = {return@composable slideOutOfContainer(AnimatedContentTransitionScope.SlideDirection.End, tween(700))}
-            ) {
-                AuctionDetailsView(
-                    currentState = uiState.currentAuctionState,
-                    directBid = uiState.isDirectBid,
-                    onSubmit = { _, _ ->}
-                )
-            }
-            composable(AppView.Profile.name,
-                enterTransition = { EnterTransition.None },
-                exitTransition = { ExitTransition.None },
-                popEnterTransition = { EnterTransition.None },
-                popExitTransition = { ExitTransition.None }
-            ) {
-                when (uiState.userState) {
-                    is UserState.NotLoggedIn -> {
-                        navController.navigate(AppView.LogIn.name)
-                    }
-                    else -> ProfileView(uiState.userState)
+                    )
                 }
+                composable(
+                    AppView.MyAuctionDetails.name,
+                    enterTransition = {
+                        return@composable slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Start,
+                            tween(700)
+                        )
+                    },
+                    popExitTransition = {
+                        return@composable slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.End,
+                            tween(700)
+                        )
+                    }
+                ) {
+                    MyAuctionDetailsView(
+                        currentState = uiState.currentAuctionState,
+                        onAccept = {}
+                    )
+                }
+                composable(AppView.Bids.name) {
+                    BidsView(
+                        uiState.userState as UserState.Bidder,
+                        { auction, bid ->
+                            viewModel.onAuctionClicked(auction, bid)
+                            navController.navigate(AppView.MyBidAuctionDetails.name)
+                        },
+                        isRefreshing = uiState.isRefreshing,
+                        onRefresh = {
+                            viewModel.refreshUserBids(true)
+                        }
+                    )
+                }
+                composable(
+                    AppView.MyBidAuctionDetails.name,
+                    enterTransition = {
+                        return@composable slideIntoContainer(
+                            AnimatedContentTransitionScope.SlideDirection.Start,
+                            tween(700)
+                        )
+                    },
+                    popExitTransition = {
+                        return@composable slideOutOfContainer(
+                            AnimatedContentTransitionScope.SlideDirection.End,
+                            tween(700)
+                        )
+                    }
+                ) {
+                    AuctionDetailsView(
+                        currentState = uiState.currentAuctionState,
+                        directBid = uiState.isDirectBid,
+                        onSubmit = { _, _ -> }
+                    )
+                }
+                composable(AppView.Profile.name,
+                    enterTransition = { EnterTransition.None },
+                    exitTransition = { ExitTransition.None },
+                    popEnterTransition = { EnterTransition.None },
+                    popExitTransition = { ExitTransition.None }
+                ) {
+                    when (uiState.userState) {
+                        is UserState.NotLoggedIn -> {
+                            navController.navigate(AppView.LogIn.name)
+                        }
 
-            }
-            composable(AppView.LogIn.name) {
-                val userState = uiState.userState
-                if(userState is UserState.NotLoggedIn)
-                    LogInView(
-                        loginState = userState,
-                        onLoginClick = { handle, password ->
-                            viewModel.onLoginClicked(
-                                handle,
-                                password,
+                        else -> ProfileView(uiState.userState)
+                    }
+
+                }
+                composable(AppView.LogIn.name) {
+                    val userState = uiState.userState
+                    if (userState is UserState.NotLoggedIn)
+                        LogInView(
+                            loginState = userState,
+                            onLoginClick = { handle, password ->
+                                viewModel.onLoginClicked(
+                                    handle,
+                                    password,
+                                )
+                            },
+                            onSignupClick = { navController.navigate(AppView.SignUp.name) }
+                        )
+                    else
+                        navController.navigate(AppView.Profile.name)
+                }
+                composable(AppView.SignUp.name) {
+                    if (uiState.userState !is UserState.NotLoggedIn) {
+                        navController.navigate(AppView.Profile.name)
+                    } else {
+                        val newUser = uiState.signUpState.newUser;
+                        val formInvalid =
+                            (uiState.signUpState as? SignUpState.Initial)?.formInvalid ?: false
+                        SignUpView(
+                            newUser = newUser,
+                            onValueChange = { passedUser -> viewModel.onSignUpFormChanged(passedUser) },
+                            formInvalid = formInvalid,
+                            onCancelClick = { navController.navigate(AppView.LogIn.name) },
+                            onSignupClick = {
+                                viewModel.onSignUpClicked(newUser)
+                            }
+                        )
+                    }
+                }
+                composable(AppView.UserDetails.name) {
+
+                }
+                composable(AppView.NewAuction.name) {
+                    val context = LocalContext.current
+                    val newAuction = uiState.newAuctionState.newAuction
+                    NewAuctionView(
+                        newAuction = newAuction,
+                        onValueChange = { passedAuction ->
+                            viewModel.onNewAuctionFormChanged(
+                                passedAuction
                             )
                         },
-                        onSignupClick = { navController.navigate(AppView.SignUp.name) }
-                    )
-                else
-                    navController.navigate(AppView.Profile.name)
-            }
-            composable(AppView.SignUp.name) {
-                if (uiState.userState !is UserState.NotLoggedIn){ navController.navigate(AppView.Profile.name) }
-                else {
-                    val newUser = uiState.signUpState.newUser;
-                    val formInvalid =
-                        (uiState.signUpState as? SignUpState.Initial)?.formInvalid ?: false
-                    SignUpView(
-                        newUser = newUser,
-                        onValueChange = { passedUser -> viewModel.onSignUpFormChanged(passedUser) },
-                        formInvalid = formInvalid,
-                        onCancelClick = { navController.navigate(AppView.LogIn.name) },
-                        onSignupClick = {
-                            viewModel.onSignUpClicked(newUser)
+                        newAuctionState = uiState.newAuctionState,
+                        exitView = { navController.navigate(AppView.Auctions.name) },
+                        onConfirmClick = { auction ->
+                            viewModel.onNewAuctionConfirm(auction, context)
                         }
                     )
                 }
             }
-            composable(AppView.UserDetails.name) {
-
-            }
-            composable(AppView.NewAuction.name) {
-                val context = LocalContext.current
-                val newAuction = uiState.newAuctionState.newAuction
-                NewAuctionView(
-                    newAuction = newAuction,
-                    onValueChange = { passedAuction -> viewModel.onNewAuctionFormChanged(passedAuction) },
-                    newAuctionState = uiState.newAuctionState,
-                    exitView = { navController.navigate(AppView.Auctions.name) },
-                    onConfirmClick = { auction ->
-                        viewModel.onNewAuctionConfirm(auction, context)
-                    }
+            if (uiState.showSearchDialog) {
+                SearchDialog(
+                    searchQuery = uiState.searchQueryState.searchQuery,
+                    onValueChange = { searchQuery -> viewModel.searchQueryChange(searchQuery) },
+                    onDismiss = { viewModel.showSearchDialog(false) },
+                    onConfirm = { searchQuery -> viewModel.onSearchSubmit(searchQuery) }
                 )
             }
+            if (uiState.showNotificationsDialog) {
+                NotificationsDialog(
+                    notifications = listOf(),
+                    onNotificationClick = { /*TODO*/ },
+                    onValueChange = { /*TODO*/ },
+                    onDismiss = { viewModel.showNotificationsDialog(false) }
+                )
+            }
+
         }
+
+
+
     }
 
 }
