@@ -6,8 +6,10 @@ import com.example.dietideals.data.repos.AuctionsRepository
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.ui.AuctionFetchState
 import com.example.dietideals.ui.HomeFetchState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withContext
 
 class HomePageUseCase (
     private val onlineAuctionsRepository: AuctionsRepository,
@@ -17,22 +19,26 @@ class HomePageUseCase (
 
     suspend fun getHomePageAuctions(state: MutableStateFlow<AppUiState>): Boolean {
         try {
-            val auctions = onlineAuctionsRepository.getAuctions()
+            val auctions: List<Auction>
+            withContext(Dispatchers.IO){ auctions = onlineAuctionsRepository.getAuctions() }
             state.update { currentState ->
                 Log.i("AppViewModel", "Success")
                 currentState.copy(
                     currentHomeState = HomeFetchState.HomeSuccess(auctions),
-                    isOnline = true
+                    isOnline = true,
+                    showAllAuctions = false
                 )
             }
             return true
         } catch (e: Exception) {
-            val auctions = offlineAuctionsRepository.getAuctions()
+            val auctions: List<Auction>
+            withContext(Dispatchers.IO){ auctions = offlineAuctionsRepository.getAuctions() }
             Log.e("AppViewModel", "Error:$e-> ${e.message}")
             state.update { currentState ->
                 currentState.copy(
                     currentHomeState = HomeFetchState.Error(auctions, message = e.message),
-                    isOnline = false
+                    isOnline = false,
+                    showAllAuctions = false
                 )
             }
             return false
@@ -52,7 +58,8 @@ class HomePageUseCase (
             state.update { currentState ->
                 currentState.copy(
                     currentHomeState = HomeFetchState.HomeSuccess(auctions),
-                    isOnline = true
+                    isOnline = true,
+                    showAllAuctions = false
                 )
             }
             return true
@@ -62,7 +69,8 @@ class HomePageUseCase (
             state.update { currentState ->
                 currentState.copy(
                     currentHomeState = HomeFetchState.Error(auctions, message = e.message),
-                    isOnline = false
+                    isOnline = false,
+                    showAllAuctions = false
                 )
             }
             return false

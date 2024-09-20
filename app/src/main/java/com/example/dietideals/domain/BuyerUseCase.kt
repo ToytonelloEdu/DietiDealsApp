@@ -23,13 +23,15 @@ class BuyerUseCase(
         amount: Double,
     ) {
         try {
-            val bid = instanciateBid(auction, amount)
+            var bid = instanciateBid(auction, amount)
             withContext(Dispatchers.IO) {
-                bidsRepository.postBid(bid, AuthenticationUseCase.token)
+                bid = bidsRepository.postBid(bid, AuthenticationUseCase.token)
             }
             refreshBids(state)
+            //return true
         } catch (e: Exception) {
             Log.e("AppViewModel", "Error: $e -> ${e.printStackTrace()}")
+            //return false
         }
     }
 

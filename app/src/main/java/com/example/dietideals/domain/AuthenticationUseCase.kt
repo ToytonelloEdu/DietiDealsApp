@@ -10,8 +10,10 @@ import com.example.dietideals.domain.models.Buyer
 import com.example.dietideals.domain.models.User
 import com.example.dietideals.ui.SignUpState
 import com.example.dietideals.ui.UserState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 
 class AuthenticationUseCase (
@@ -27,7 +29,7 @@ class AuthenticationUseCase (
         }
         try {
             if (!newUser.isValid) throw IllegalArgumentException("Invalid user")
-            authRepo.signup(newUser.toUser())
+            withContext(Dispatchers.IO){ authRepo.signup(newUser.toUser()) }
             state.update { currentState ->
                 currentState.copy(signUpState = SignUpState.Success(NewUser()))
             }
@@ -43,11 +45,12 @@ class AuthenticationUseCase (
 
     suspend fun logIn(state: MutableStateFlow<AppUiState>, handle: String, password: String) {
         try {
-            authRepo.auth(handle, password).let {
-                updateUserStateByHandle(state, handle, password)
-                token = it
-                Log.i("AppViewModel", "Response: $token")
-
+            withContext(Dispatchers.IO) {
+                authRepo.auth(handle, password).let {
+                    updateUserStateByHandle(state, handle, password)
+                    token = it
+                    Log.i("AppViewModel", "Response: $token")
+                }
             }
         } catch (e: HttpException) {
             Log.e("AppViewModel", "Error: ${e.message}")
@@ -65,7 +68,8 @@ class AuthenticationUseCase (
 
     suspend fun rememberLogIn(state: MutableStateFlow<AppUiState>) {
             try {
-                val savedUser = offlineUsersRepo.getOwnUser()
+                val savedUser: User
+                withContext(Dispatchers.IO) { savedUser = offlineUsersRepo.getOwnUser() }
 
                 user = savedUser
                 state.update { currentState ->
@@ -85,8 +89,10 @@ class AuthenticationUseCase (
     suspend fun checkToken(state: MutableStateFlow<AppUiState>) {
         if (user != null) {
             try {
-                authRepo.auth(user!!.username, user!!.password!!).let {
-                    token = it
+                withContext(Dispatchers.IO) {
+                    authRepo.auth(user!!.username, user!!.password!!).let {
+                        token = it
+                    }
                 }
             }catch (http: HttpException) {
                 if(http.code() == 401) {
@@ -109,7 +115,7 @@ class AuthenticationUseCase (
                 userState = UserState.NotLoggedIn()
             )
         }
-        offlineUsersRepo.deleteUser(user!!)
+        withContext(Dispatchers.IO) { offlineUsersRepo.deleteUser(user!!) }
         token = null
         user = null
     }
@@ -120,19 +126,20 @@ class AuthenticationUseCase (
         handle: String,
         password: String
     ) {
-        val onlineUser = onlineUsersRepo.getUserByHandle(handle)
+        val onlineUser: User
+        withContext(Dispatchers.IO) { onlineUser = onlineUsersRepo.getUserByHandle(handle) }
         when (onlineUser) {
             is Auctioneer -> {
                 state.update { currentState ->
                     currentState.copy(userState = UserState.Vendor(onlineUser))
                 }
-                offlineUsersRepo.addUser(onlineUser.copy(password = password))
+                withContext(Dispatchers.IO) { offlineUsersRepo.addUser(onlineUser.copy(password = password)) }
             }
             is Buyer -> {
                 state.update { currentState ->
                     currentState.copy(userState = UserState.Bidder(onlineUser))
                 }
-                offlineUsersRepo.addUser(onlineUser.copy(password = password))
+                withContext(Dispatchers.IO) { offlineUsersRepo.addUser(onlineUser.copy(password = password)) }
             }
             else -> throw IllegalArgumentException("NetUser type not found")
         }
