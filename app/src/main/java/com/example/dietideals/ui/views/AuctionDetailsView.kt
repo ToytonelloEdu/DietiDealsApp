@@ -82,6 +82,7 @@ import com.example.dietideals.ui.components.TagIcon
 import com.example.dietideals.ui.components.TimePlusIconText
 import com.example.dietideals.ui.components.TimerIconText
 import com.example.dietideals.ui.components.UnderLine
+import com.example.dietideals.ui.components.toFormattedDateTime
 import com.example.dietideals.ui.theme.primaryLight
 import kotlinx.coroutines.delay
 

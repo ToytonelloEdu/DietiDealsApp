@@ -271,13 +271,43 @@ fun TimePlusIcon(primaryColor: Color = MaterialTheme.colorScheme.primary) {
 }
 
 @Composable
-fun OffileIcon() {
+fun OffileIcon(
+    primaryColor: Color = Color(0xFFBBBBBB),
+) {
     Icon(
         painter = painterResource(id = R.drawable.ic_connection_error),
         contentDescription = null,
-        tint = Color(0xFFBBBBBB),
+        tint = primaryColor,
         modifier = Modifier
             .size(35.dp)
+            .padding(4.dp)
+    )
+}
+
+@Composable
+fun GavelIcon(
+    primaryColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Icon(
+        painter = painterResource(id = R.drawable.filled_auction_ic),
+        contentDescription = null,
+        tint = primaryColor,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun SearchIcon(
+    primaryColor: Color,
+    modifier: Modifier = Modifier
+) {
+    Icon(
+        painter = painterResource(id = R.drawable.search_ic),
+        contentDescription = "Notifications",
+        tint = primaryColor,
+        modifier = modifier
+            .size(30.dp)
             .padding(4.dp)
     )
 }

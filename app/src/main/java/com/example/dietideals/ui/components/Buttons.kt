@@ -72,6 +72,7 @@ fun AuctionButton(
     currentView: AppView,
     userState: UserState,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     val isSelected = (routesByButton["Gavel"]?.contains(currentView) == true)
@@ -82,7 +83,7 @@ fun AuctionButton(
             containerColor = Color.Transparent,
             disabledContainerColor = Color.Transparent
         ),
-        enabled = isLoggedIn && !isSelected
+        enabled = isLoggedIn && !isSelected && enabled
         ) {
         AuctionIcon(modifier, isSelected, isLoggedIn)
     }
@@ -94,6 +95,7 @@ fun AuctionButton(
 fun HomeButton(
     currentView: AppView,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     val isSelected = (routesByButton["Home"]?.contains(currentView) == true)
@@ -103,7 +105,7 @@ fun HomeButton(
             containerColor = Color.Transparent,
             disabledContainerColor = Color.Transparent
         ),
-        enabled = !isSelected
+        enabled = !isSelected && enabled
     )  {
         HomeIcon(modifier, isSelected)
     }
@@ -115,6 +117,7 @@ fun HomeButton(
 fun UserButton(
     currentView: AppView,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     val isSelected = (routesByButton["NetUser"]?.contains(currentView) == true)
@@ -124,7 +127,7 @@ fun UserButton(
             containerColor = Color.Transparent,
             disabledContainerColor = Color.Transparent
         ),
-        enabled = !isSelected
+        enabled = !isSelected && enabled
     )  {
         UserIcon(modifier, isSelected)
     }
@@ -518,7 +521,7 @@ fun NotifIconButton(
         Icon(
             painter = painterResource(id = R.drawable.notifs_ic),
             contentDescription = "Notifications",
-            tint = color,
+            tint = color.let { if (enabled) it else it.darken(0.4f)},
             modifier = Modifier.size(30.dp).padding(4.dp)
         )
     }
@@ -534,12 +537,7 @@ fun SearchIconButton(
         modifier = modifier,
         onClick = { onClick() }
     ) {
-        Icon(
-            painter = painterResource(id = R.drawable.search_ic),
-            contentDescription = "Notifications",
-            tint = color,
-            modifier = Modifier.size(30.dp).padding(4.dp)
-        )
+        SearchIcon(color)
     }
 }
 
@@ -577,6 +575,33 @@ fun SettingsIconButton(
             contentDescription = "Notifications",
             tint = color,
             modifier = Modifier.padding(4.dp)
+        )
+    }
+}
+
+@Composable
+fun SearchTextButton(
+    primaryColor: Color,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = modifier
+            .size(120.dp, 50.dp)
+            .clip(RoundedCornerShape(5.dp))
+            .background(primaryColor)
+            .clickable { onClick() },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceEvenly
+    ) {
+        SearchIcon(
+            primaryColor = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.size(30.dp)
+        )
+        Text(
+            text = "Search",
+            color = MaterialTheme.colorScheme.onPrimary,
+            fontSize = 19.sp
         )
     }
 }

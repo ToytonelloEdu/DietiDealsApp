@@ -1,6 +1,5 @@
 package com.example.dietideals.ui.views
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,12 +20,13 @@ import com.example.dietideals.ui.components.SwipeRefresh
 @Composable
 fun HomeView(
     fetchState: HomeFetchState,
+    showAll: Boolean,
     onAuctionClicked: (Auction, Boolean) -> Unit,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (fetchState) {
-        is HomeFetchState.HomeSuccess -> SuccessHomeView(fetchState.auctions, fetchState.isRefreshing, onAuctionClicked, onRefresh, modifier)
+        is HomeFetchState.HomeSuccess -> SuccessHomeView(fetchState.auctions, fetchState.isRefreshing, onAuctionClicked, onRefresh, modifier, showAll)
         is HomeFetchState.Error -> SuccessHomeView(fetchState.auctions, fetchState.isRefreshing, onAuctionClicked, onRefresh, modifier)
         else -> LoadingView(modifier.fillMaxSize())
     }
@@ -39,7 +39,8 @@ private fun SuccessHomeView(
     isRefreshing: Boolean,
     onAuctionClicked: (Auction, Boolean) -> Unit,
     onRefresh: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showAll: Boolean = false
 ) {
 
     SwipeRefresh(
@@ -64,7 +65,7 @@ private fun SuccessHomeView(
             ) {
 
                 items(auctions.size) { index ->
-                    if (!auctions[index].hasBeenOverFor(3))
+                    if (showAll || !auctions[index].hasBeenOverFor(3))
                         HomeAuctionCard(auctions[index], onAuctionClicked)
                 }
             }
@@ -75,5 +76,9 @@ private fun SuccessHomeView(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun HomeViewPreview() {
-        HomeView(HomeFetchState.HomeSuccess(auctions = emptyList()), { _, _ -> }, {})
+        HomeView(
+            HomeFetchState.HomeSuccess(auctions = emptyList()),
+            false,
+            { _, _ -> },
+            {})
 }

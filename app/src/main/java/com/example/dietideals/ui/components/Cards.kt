@@ -1,5 +1,6 @@
 package com.example.dietideals.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -199,9 +200,11 @@ fun MyAuctionInfoRow(auction: Auction, primaryColor: Color) {
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         val restUrl = stringResource(R.string.restapi_url)
+        val picture = auction.pictures.firstOrNull() ?: "none"
+        Log.d("MyAuctionInfoRow", "Picture: $picture")
         AsyncImage(
             model = ImageRequest.Builder(context = LocalContext.current)
-                .data("${restUrl}photos/${auction.pictures[0]}").build(),
+                .data("${restUrl}photos/${picture}").build(),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxHeight()
@@ -333,9 +336,10 @@ private fun AuctionInfoRow(auction: Auction, primaryColor: Color, modifier: Modi
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         val restUrl = stringResource(R.string.restapi_url)
+        val picture = auction.pictures.firstOrNull() ?: "none"
         AsyncImage(
             model = ImageRequest.Builder(context = LocalContext.current)
-                .data("${restUrl}photos/${auction.pictures[0]}").build(),
+                .data("${restUrl}photos/${picture}").build(),
             contentDescription = null,
             modifier = Modifier
                 .size(130.dp)

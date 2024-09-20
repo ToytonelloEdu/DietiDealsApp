@@ -100,10 +100,11 @@ fun AppBottomBar(
     onAuctionClick: () -> Unit,
     onHomeClick: () -> Unit,
     onUserClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    navigationEnabled: Boolean = true
 ) {
     BottomAppBar (
-        modifier = Modifier
+        modifier = modifier
             .height(66.dp)
             .let {
                 if (!isSystemInDarkTheme()) it.border(0.5.dp, Color.LightGray)
@@ -116,9 +117,9 @@ fun AppBottomBar(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                AuctionButton(currentScreen, userState) { onAuctionClick() }
-                if (userState !is UserState.Vendor) HomeButton(currentScreen) { onHomeClick() }
-                UserButton(currentScreen) { onUserClick() }
+                AuctionButton(currentScreen, userState, enabled = navigationEnabled) { onAuctionClick() }
+                if (userState !is UserState.Vendor) HomeButton(currentScreen, enabled = navigationEnabled) { onHomeClick() }
+                UserButton(currentScreen, enabled = navigationEnabled) { onUserClick() }
             }
     }
 }
