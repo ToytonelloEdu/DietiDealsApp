@@ -1,8 +1,6 @@
 package com.example.dietideals.ui
 
 import android.content.Context
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -16,13 +14,14 @@ import com.example.dietideals.domain.AuthenticationUseCase
 import com.example.dietideals.domain.BuyerUseCase
 import com.example.dietideals.domain.HomePageUseCase
 import com.example.dietideals.domain.ImageUploadUseCase
+import com.example.dietideals.domain.SearchUseCase
 import com.example.dietideals.domain.auxiliary.FormField
 import com.example.dietideals.domain.auxiliary.NewAuction
 import com.example.dietideals.domain.auxiliary.NewUser
+import com.example.dietideals.domain.auxiliary.SearchQuery
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.Auctioneer
 import com.example.dietideals.domain.models.Buyer
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,12 +36,16 @@ class AppViewModel(
     private val auctioneerUseCase: AuctioneerUseCase,
     private val buyerUseCase: BuyerUseCase,
     private val imageUploadUseCase: ImageUploadUseCase,
+    private val searchUseCase: SearchUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AppUiState())
     val uiState: StateFlow<AppUiState> = _uiState.asStateFlow()
 
     private val auctions: List<Auction>
         get() = (_uiState.value.currentHomeState.getAuctionsOrNull()) ?: emptyList()
+
+    val navigationEnabled: Boolean
+        get() = !_uiState.value.showSearchDialog && !_uiState.value.showNotificationsDialog
 
     init {
         runBlocking {
@@ -121,6 +124,7 @@ class AppViewModel(
         viewModelScope.launch {
             if(AuthenticationUseCase.token == null) authenticationUseCase.checkToken(_uiState)
 
+
             auctioneerUseCase.createNewAuction(_uiState, newAuction) { uris, auction ->
                 uris.forEachIndexed { index, path ->
                     imageUploadUseCase.uploadAuctionImage(context, auction.id!!, index, path)
@@ -147,7 +151,9 @@ class AppViewModel(
         viewModelScope.launch {
             if(AuthenticationUseCase.token == null) authenticationUseCase.checkToken(_uiState)
 
+            //if
             buyerUseCase.createNewBid(_uiState, auction, amount)
+                //homePageUseCase.updateSingleAuction(_uiState, auction)
         }
     }
 
@@ -176,6 +182,36 @@ class AppViewModel(
         }
     }
 
+    fun showSearchDialog(show: Boolean = !_uiState.value.showSearchDialog) {
+        _uiState.update {
+            it.copy(
+                showSearchDialog = show,
+                showNotificationsDialog = false
+            )
+        }
+    }
+
+    fun showNotificationsDialog(show: Boolean = !_uiState.value.showNotificationsDialog) {
+        _uiState.update {
+            it.copy(
+                showNotificationsDialog = show,
+                showSearchDialog = false
+            )
+        }
+    }
+
+    fun searchQueryChange(searchQuery: SearchQuery) {
+        _uiState.update {
+            it.copy(searchQueryState = SearchQueryState.Initial(searchQuery))
+        }
+    }
+
+    fun onSearchSubmit(query: SearchQuery) {
+        viewModelScope.launch {
+            searchUseCase.searchAuctions(_uiState, query)
+        }
+    }
+
 
     companion object{
         val Factory: ViewModelProvider.Factory = viewModelFactory {
@@ -194,7 +230,8 @@ class AppViewModel(
                     authenticationUseCase = AuthenticationUseCase(authRepository, usersRepository, offlineUsersRepository),
                     auctioneerUseCase = AuctioneerUseCase(auctionsRepository),
                     buyerUseCase = BuyerUseCase(bidsRepository),
-                    imageUploadUseCase = ImageUploadUseCase(imagesRepository)
+                    imageUploadUseCase = ImageUploadUseCase(imagesRepository),
+                    searchUseCase = SearchUseCase(auctionsRepository)
                 )
             }
         }
