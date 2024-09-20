@@ -22,6 +22,7 @@ retrofit2KotlinxSerializationConverter = "1.0.0"
 roomRuntime = "2.6.1"
 roomKtx = "2.6.1"
 uiTextGoogleFonts = "1.6.8"
+workRuntime = "2.9.1"
 
 [libraries]
 androidx-compose-bom-v20240500 = { module = "androidx.compose:compose-bom", version.ref = "composeBomVersion" }
@@ -38,6 +39,7 @@ androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomKtx"
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 androidx-runtime = { module = "androidx.compose.runtime:runtime" }
 androidx-runtime-livedata = { module = "androidx.compose.runtime:runtime-livedata" }
+androidx-work-runtime = { module = "androidx.work:work-runtime", version.ref = "workRuntime" }
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coilCompose" }
 converter-kotlinx-serialization = { module = "com.squareup.retrofit2:converter-kotlinx-serialization", version = "2.11.0" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }

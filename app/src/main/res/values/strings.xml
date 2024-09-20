@@ -12,9 +12,9 @@
     <string name="log_in">Log In</string>
     <string name="sign_up">Sign Up</string>
     <string name="user_details">User Details</string>
-    <string name="restapi_url">http://192.168.0.105:8080/api/1.0/</string>
     <string name="my_auction_details">My Auction Details</string>
     <string name="my_bid_auction_details">My Bid Auction Details</string>
     <string name="new_auction">New Auction</string>
     <string name="user">User</string>
+    <string name="restapi_url">http://16.170.250.114:8080/api/1.0/</string>
 </resources>
