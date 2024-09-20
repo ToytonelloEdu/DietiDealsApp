@@ -2,9 +2,9 @@ package com.example.dietideals.ui
 
 import com.example.dietideals.domain.auxiliary.NewAuction
 import com.example.dietideals.domain.auxiliary.NewUser
+import com.example.dietideals.domain.auxiliary.SearchQuery
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.Auctioneer
-import com.example.dietideals.domain.models.Bid
 import com.example.dietideals.domain.models.Buyer
 import com.example.dietideals.domain.models.User
 
@@ -60,8 +60,15 @@ sealed class SignUpState (val newUser: NewUser) {
 }
 
 sealed class NewAuctionState(val newAuction: NewAuction) {
-    class Initial(newAuction: NewAuction, val formValid: Boolean = true) : NewAuctionState(newAuction)
+    class Initial(newAuction: NewAuction) : NewAuctionState(newAuction)
     class Loading(newAuction: NewAuction) : NewAuctionState(newAuction)
     class Success(newAuction: NewAuction) : NewAuctionState(newAuction)
     class Error(newAuction: NewAuction, val message: String? = null) : NewAuctionState(newAuction)
+}
+
+sealed class SearchQueryState(val searchQuery: SearchQuery) {
+    class Initial(searchQuery: SearchQuery) : SearchQueryState(searchQuery)
+    class Loading(searchQuery: SearchQuery) : SearchQueryState(searchQuery)
+    class Success(searchQuery: SearchQuery) : SearchQueryState(searchQuery)
+    class Error(searchQuery: SearchQuery, val message: String? = null) : SearchQueryState(searchQuery)
 }
