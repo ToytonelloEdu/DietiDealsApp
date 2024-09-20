@@ -59,8 +59,17 @@ data class IncrementalAuction (
                 .replaceFirst("T", " ")
         ),
         mutableListOf(),
-        //dbAuction.lastBid?.let { Bid(it) },
-        null,
+        dbAuction.lastBid?.let {
+            Bid(
+                id = it.bidId,
+                amount = it.amount,
+                time = Timestamp.valueOf(
+                    it.time
+                        ?.replace("Z[UTC]", "")
+                        ?.replaceFirst("T", " ")
+                )
+            )
+        },
         listOf(),
         dbAuction.timeInterval!!,
         dbAuction.startingPrice!!,
