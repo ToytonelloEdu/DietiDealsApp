@@ -33,7 +33,7 @@ data class NewAuction(
         FormField(null) { if (it == null) throw IllegalArgumentException("Auctioneer cannot be null") ;true },
     val date: FormField<Date> =
         FormField(Date()) {
-            if (it.time < (System.currentTimeMillis() + (60 * 1000))) throw IllegalArgumentException("Date cannot be in the past")
+            if (it.time < (System.currentTimeMillis() - (60 * 1000))) throw IllegalArgumentException("Date cannot be in the past")
             true
         },
 
