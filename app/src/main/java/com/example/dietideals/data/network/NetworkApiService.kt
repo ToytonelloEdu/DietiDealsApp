@@ -15,6 +15,7 @@ import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.Part
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 /**
  * **NetworkApiService** - Interface for Network API calls
@@ -28,6 +29,15 @@ interface NetworkApiService {
     //AUCTIONS
     @GET("auctions")
     suspend fun getAuctions() : List<NetAuction>
+
+    @GET("auctions")
+    suspend fun getAuctionsQueried(
+        @Query("object") objectName: String? = null,
+        @Query("vendor") vendor: String? = null,
+        @Query("tag1") tag1: String? = null,
+        @Query("tag2") tag2: String? = null,
+        @Query("tag3") tag3: String? = null,
+    ) : List<NetAuction>
 
     @GET("auctions/{id}")
     suspend fun getAuctionById(@Path("id") id: Int) : NetAuction
