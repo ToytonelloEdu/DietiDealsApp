@@ -1,9 +1,11 @@
 package com.example.dietideals.domain.models
 
+import androidx.annotation.IntRange
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.example.dietideals.data.persistence.entities.DbAuction
 import com.example.dietideals.data.network.serializables.NetAuction
+import org.jetbrains.annotations.Range
 import java.sql.Timestamp
 import java.util.Date
 
@@ -74,7 +76,8 @@ data class SilentAuction (
         return Timestamp(System.currentTimeMillis()) >= expirationDate
     }
 
-    override fun hasBeenOverFor(days: Int): Boolean {
+    override fun hasBeenOverFor(@IntRange(from = 0, to = 14) days: Int): Boolean {
+        if(days < 0 || days > 14) throw IllegalArgumentException("Days has to be between 0 and 14")
         if(isAuctionOver()) {
             val nowMinusDays = Timestamp(System.currentTimeMillis() - (days * 24 * 60 * 60 * 1000))
             return expirationDate.before(nowMinusDays)
