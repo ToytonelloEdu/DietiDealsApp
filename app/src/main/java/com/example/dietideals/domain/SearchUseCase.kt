@@ -13,7 +13,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import retrofit2.HttpException
 
-class SearchUseCase(private val auctionsRepository: AuctionsRepository) {
+class SearchUseCase(
+    private val auctionsRepository: AuctionsRepository
+) {
 
     suspend fun searchAuctions(state: MutableStateFlow<AppUiState>, query: SearchQuery) {
         try {
