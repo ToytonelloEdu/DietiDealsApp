@@ -7,7 +7,7 @@ import com.example.dietideals.domain.models.User
 
 interface AuthRepository{
     suspend fun auth(handle: String, password: String): String //JWT Token
-    suspend fun signup(user: User): NetUser
+    suspend fun signup(user: User): User
 }
 
 class NetworkAuthRepository(
@@ -18,8 +18,8 @@ class NetworkAuthRepository(
         return networkData.restLogin(auth)
     }
 
-    override suspend fun signup(user: User): NetUser {
-        return networkData.restSignup(user.toNetUser())
+    override suspend fun signup(user: User): User {
+        return networkData.restSignup(user.toNetUser()).toUser()
     }
 
 }
