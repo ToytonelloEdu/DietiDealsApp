@@ -11,11 +11,10 @@ import java.util.concurrent.TimeUnit
 class NotificationsUseCase(
     context: Context
 ) {
-    val workManager = WorkManager.getInstance(context)
+    private val workManager = WorkManager.getInstance(context)
 
-    fun fetchNotifications(user: User): List<Notification> {
+    fun fetchNotifications() {
         val notifsFetchBuilder = PeriodicWorkRequestBuilder<NotificationWorker>(5, TimeUnit.SECONDS)
-
-        return listOf()
+        workManager.enqueue(notifsFetchBuilder.build())
     }
 }

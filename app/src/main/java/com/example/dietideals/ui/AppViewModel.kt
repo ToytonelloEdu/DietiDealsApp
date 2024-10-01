@@ -14,6 +14,7 @@ import com.example.dietideals.domain.AuthenticationUseCase
 import com.example.dietideals.domain.BuyerUseCase
 import com.example.dietideals.domain.HomePageUseCase
 import com.example.dietideals.domain.ImageUploadUseCase
+import com.example.dietideals.domain.NotificationsUseCase
 import com.example.dietideals.domain.SearchUseCase
 import com.example.dietideals.domain.auxiliary.FormField
 import com.example.dietideals.domain.auxiliary.NewAuction
@@ -36,7 +37,8 @@ class AppViewModel(
     private val auctioneerUseCase: AuctioneerUseCase,
     private val buyerUseCase: BuyerUseCase,
     private val imageUploadUseCase: ImageUploadUseCase,
-    private val searchUseCase: SearchUseCase
+    private val searchUseCase: SearchUseCase,
+    private val notificationsUseCase: NotificationsUseCase
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(AppUiState())
     val uiState: StateFlow<AppUiState> = _uiState.asStateFlow()
@@ -231,7 +233,8 @@ class AppViewModel(
                     auctioneerUseCase = AuctioneerUseCase(auctionsRepository),
                     buyerUseCase = BuyerUseCase(bidsRepository),
                     imageUploadUseCase = ImageUploadUseCase(imagesRepository),
-                    searchUseCase = SearchUseCase(auctionsRepository)
+                    searchUseCase = SearchUseCase(auctionsRepository),
+                    notificationsUseCase = NotificationsUseCase(application.applicationContext)
                 )
             }
         }
