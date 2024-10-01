@@ -63,7 +63,7 @@ import java.text.NumberFormat
 internal val routesByButton = mapOf(
     "Home" to listOf(AppView.Home, AppView.AuctionDetails),
     "Gavel" to listOf(AppView.Auctions, AppView.Bids, AppView.MyAuctionDetails, AppView.MyBidAuctionDetails, AppView.NewAuction),
-    "NetUser" to listOf(AppView.Profile, AppView.LogIn, AppView.SignUp)
+    "User" to listOf(AppView.Profile, AppView.LogIn, AppView.SignUp)
 )
 
 
@@ -120,7 +120,7 @@ fun UserButton(
     enabled: Boolean = true,
     onClick: () -> Unit
 ) {
-    val isSelected = (routesByButton["NetUser"]?.contains(currentView) == true)
+    val isSelected = (routesByButton["User"]?.contains(currentView) == true)
     Button(
         onClick = { onClick() },
         colors = buttonColors().copy(

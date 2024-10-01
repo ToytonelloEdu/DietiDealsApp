@@ -129,11 +129,12 @@ fun iconByAuctionType(auction: Auction) = when (auction) {
 }
 
 @Composable
-fun AtIcon(primaryColor: Color) {
+fun AtIcon(primaryColor: Color, modifier: Modifier = Modifier) {
     Icon(
         painter = painterResource(id = R.drawable.at_ic),
         contentDescription = null,
-        tint = primaryColor
+        tint = primaryColor,
+        modifier = modifier
     )
 }
 

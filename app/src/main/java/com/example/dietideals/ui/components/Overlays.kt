@@ -235,7 +235,7 @@ fun NotificationsDialog(
 
 
 @Composable
-fun TagPillsRow(
+private fun TagPillsRow(
     tags: MutableList<String>,
     screenFraction: Float,
     onValueChange: () -> Unit,
