@@ -18,6 +18,7 @@ data class NetUser (
     val nationality: String? = null,
     val gender: String? = null,
     val birthdate: String? = null,
+    val links: NetLinks? = null,
     val bids: List<NetBid>? = null,
     val auctions: List<NetAuction>? = null
 ) {

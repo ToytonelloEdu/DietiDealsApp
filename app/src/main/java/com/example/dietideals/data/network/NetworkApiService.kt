@@ -5,6 +5,7 @@ import com.example.dietideals.data.network.serializables.NetAuth
 import com.example.dietideals.data.network.serializables.NetBid
 import com.example.dietideals.data.network.serializables.NetTag
 import com.example.dietideals.data.network.serializables.NetUser
+import com.example.dietideals.domain.models.Notification
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.ResponseBody
@@ -88,5 +89,12 @@ interface NetworkApiService {
         @Part image: MultipartBody.Part,
         @Part("details") details: RequestBody
     ) : ResponseBody
+
+    //NOTIFICATIONS
+    @GET("notifications/{handle}")
+    suspend fun getNotifications(
+        @Header("Authorization") token: String,
+        @Path("handle") handle: String,
+    ) : List<Notification>
 
 }
