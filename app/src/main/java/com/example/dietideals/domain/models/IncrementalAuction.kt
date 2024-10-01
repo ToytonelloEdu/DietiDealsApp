@@ -2,8 +2,8 @@ package com.example.dietideals.domain.models
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import com.example.dietideals.data.persistence.entities.DbAuction
 import com.example.dietideals.data.network.serializables.NetAuction
+import com.example.dietideals.data.persistence.entities.DbAuction
 import com.example.dietideals.domain.auxiliary.Seconds
 import java.sql.Timestamp
 

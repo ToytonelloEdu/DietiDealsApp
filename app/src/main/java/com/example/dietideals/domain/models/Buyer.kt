@@ -15,8 +15,9 @@ data class Buyer(
     override val nationality: String? = null,
     override val gender: String? = null,
     override val birthdate: Timestamp? = null,
+    override val links: Links? = null,
     val bids: List<Bid>
-): User(username, email, password, firstName, lastName, proPicPath, bio, nationality) {
+): User(username, email, password, firstName, lastName, proPicPath, bio, nationality, gender, birthdate, links) {
     constructor(user: NetUser) : this(
         user.username,
         user.email,
@@ -30,6 +31,7 @@ data class Buyer(
         user.birthdate?.let {
             Timestamp.valueOf(it.replace("Z[UTC]", "").replaceFirst("T", " "))
         }.also { if (it == null) throw IllegalArgumentException("Birthdate is null") },
+        user.links?.toLinks(),
         user.bids?.map { Bid(it) } ?: emptyList()
     )
 
@@ -46,6 +48,7 @@ data class Buyer(
         user.birthdate?.let {
             Timestamp.valueOf(it.replace("Z[UTC]", "").replaceFirst("T", " "))
         }.also { if (it == null) throw IllegalArgumentException("Birthdate is null") },
+        Links(),
         emptyList()
     )
 

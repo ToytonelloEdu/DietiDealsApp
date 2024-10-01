@@ -15,8 +15,9 @@ data class Auctioneer(
     override val nationality: String? = null,
     override val gender: String? = null,
     override val birthdate: Timestamp? = null,
+    override val links: Links? = null,
     val auctions: MutableList<Auction>
-): User(username, email, password, firstName, lastName, proPicPath, bio, nationality, gender, birthdate) {
+): User(username, email, password, firstName, lastName, proPicPath, bio, nationality, gender, birthdate, links) {
     constructor(user: NetUser) : this(
         user.username,
         user.email,
@@ -30,6 +31,7 @@ data class Auctioneer(
         user.birthdate?.let {
             Timestamp.valueOf(it.replace("Z[UTC]", "").replaceFirst("T", " "))
         },
+        user.links?.toLinks(),
         user.auctions?.map { it.toAuction() }?.toMutableList() ?: mutableListOf()
     )
 
@@ -46,6 +48,7 @@ data class Auctioneer(
         user.birthdate?.let {
             Timestamp.valueOf(it.replace("Z[UTC]", "").replaceFirst("T", " "))
         }.also { if (it == null) throw IllegalArgumentException("Birthdate is null") },
+        Links(),
         mutableListOf()
     )
 
@@ -61,6 +64,7 @@ data class Auctioneer(
             nationality = nationality,
             gender = gender,
             birthdate = birthdate.toString().replace(" ", "T") + "Z[UTC]",
+            links = links?.toNetLinks(),
             bids = null,
             auctions = emptyList(),
             userType = "Auctioneer"
@@ -79,6 +83,7 @@ data class Auctioneer(
             nationality = nationality,
             gender = gender,
             birthdate = birthdate.toString().replace(" ", "T") + "Z[UTC]",
+            //website = links.website, ....,
             userType = "Auctioneer"
         )
     }

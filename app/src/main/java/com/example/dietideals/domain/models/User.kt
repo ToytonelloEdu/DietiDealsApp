@@ -14,7 +14,8 @@ abstract class User (
     open val bio: String? = null,
     open val nationality: String? = null,
     open val gender: String? = null,
-    open val birthdate: Timestamp? = null
+    open val birthdate: Timestamp? = null,
+    open val links: Links? = null
 ) {
     abstract fun toNetUser(): NetUser
     abstract fun toDbUser(): DbOwnUser
