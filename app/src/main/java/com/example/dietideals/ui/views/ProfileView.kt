@@ -2,6 +2,7 @@ package com.example.dietideals.ui.views
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +13,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,19 +30,24 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
+import coil.compose.AsyncImagePainter.State.Empty.painter
 import coil.request.ImageRequest
 import com.example.dietideals.R
 import com.example.dietideals.domain.models.Auctioneer
 import com.example.dietideals.domain.models.Buyer
+import com.example.dietideals.domain.models.Links
 import com.example.dietideals.domain.models.User
 import com.example.dietideals.ui.UserState
+import com.example.dietideals.ui.components.AtIcon
 import com.example.dietideals.ui.components.UnderLine
 
 @Composable
@@ -60,7 +71,7 @@ fun UserProfileView(user: User, isOwnProfile: Boolean, modifier: Modifier = Modi
         verticalArrangement = Arrangement.spacedBy(28.dp, Alignment.Top)
     ) {
         UserMainInfosRow(user)
-        UserLinksRows(user, isOwnProfile)
+        UserLinksRows(user.links, isOwnProfile)
         UserFieldBox("Bio", user.bio ?: "No bio",
             Modifier
                 .wrapContentHeight(),
@@ -120,7 +131,7 @@ fun UserMainInfosRow(user: User, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun UserLinksRows(user: User, isOwnProfile: Boolean, modifier: Modifier = Modifier) {
+fun UserLinksRows(links: Links?, isOwnProfile: Boolean, modifier: Modifier = Modifier) {
     Column (
         modifier = modifier
             .fillMaxWidth()
@@ -130,19 +141,87 @@ fun UserLinksRows(user: User, isOwnProfile: Boolean, modifier: Modifier = Modifi
     ) {
         Row (
             modifier = modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start,
+            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Socials:")
+            Text(
+                text = "Socials: ",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp
+                )
+            )
+            LazyRow(
+                modifier = modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                item {
+                    Icon(
+                        imageVector = Icons.Default.Email,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(25.dp)
+                            .clickable(
+                                //enabled = !isOwnProfile
+                            ) {
 
+                            }
+                    )
+                }
+                if(links != null){
+                    val map = links.toLinksMap()
+                    item{
+                        if (map.containsKey("instagram")) {
+                            Text(text = map.getValue("instagram"))
+                        }
+                    }
+                    item{
+                        if (map.containsKey("twitter")) {
+                            Text(text = map.getValue("twitter"))
+                        }
+                    }
+                    item{
+                        if (map.containsKey("facebook")) {
+                            Text(text = map.getValue("facebook"))
+                        }
+                    }
+                }
+            }
         }
         Row (
             modifier = modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start,
+            horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Website:")
+            Text(
+                text = "Website: ",
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 20.sp
+                )
+            )
+            Icon(
+                painter = painterResource(id = R.drawable.internet_ic),
+                contentDescription = null,
+                tint = if (links?.website == null) Color.Gray else Color.Black,
+                modifier = Modifier.size(25.dp)
+            )
+            if(links?.website == null) {
+                Text(text = "No website", color = Color.Gray, modifier = Modifier.padding(top = 2.dp))
+            } else {
+                Text(
+                    text = links.website,
+                    style = LocalTextStyle.current.copy(
+                        color = Color(0xFF0A81E9)
+                    ),
+                    textDecoration = TextDecoration.Underline,
+                    modifier = Modifier
+                        .clickable {
 
+                        }
+                )
+            }
         }
     }
 
