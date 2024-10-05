@@ -7,9 +7,10 @@ import com.example.dietideals.data.persistence.entities.DbAuction
 import com.example.dietideals.data.network.serializables.NetAuction
 import org.jetbrains.annotations.Range
 import java.sql.Timestamp
+import java.time.Instant
 import java.util.Date
 
-data class SilentAuction (
+data class SilentAuction(
     override val id: Int? = null,
     override val pictures: List<String> = emptyList(),
     override val medianColor: Color? = null,
