@@ -3,6 +3,7 @@ package com.example.dietideals.data.network
 import com.example.dietideals.data.network.serializables.NetAuction
 import com.example.dietideals.data.network.serializables.NetAuth
 import com.example.dietideals.data.network.serializables.NetBid
+import com.example.dietideals.data.network.serializables.NetNotification
 import com.example.dietideals.data.network.serializables.NetTag
 import com.example.dietideals.data.network.serializables.NetUser
 import com.example.dietideals.domain.models.Notification
@@ -14,6 +15,7 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Multipart
 import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -46,12 +48,26 @@ interface NetworkApiService {
     @POST("auctions")
     suspend fun postAuction(@Header("Authorization") token: String, @Body auction: NetAuction) : NetAuction
 
+    @PUT("auctions/{id}/accept/{bidId}")
+    suspend fun acceptBid(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int,
+        @Path("bidId") bidId: Int
+    ): NetAuction
+
     @GET("users/{handle}/auctions")
     suspend fun getAuctionsByUser(@Path("handle") handle: String) : List<NetAuction>
 
     //USERS
     @GET("users/{handle}")
     suspend fun getUserByHandle(@Path("handle") handle: String) : NetUser
+
+    @PUT("users/{username}")
+    suspend fun updateUser(
+        @Header("Authorization") token: String,
+        @Path("username") username: String,
+        @Body user: NetUser,
+    ) : NetUser
 
     //AUTH
     @POST("auth")
@@ -95,6 +111,6 @@ interface NetworkApiService {
     suspend fun getNotifications(
         @Header("Authorization") token: String,
         @Path("handle") handle: String,
-    ) : List<Notification>
+    ) : List<NetNotification>
 
 }
