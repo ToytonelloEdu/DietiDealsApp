@@ -39,7 +39,6 @@ fun LogInView(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly
     ) {
-        ThirdPartyLogin()
         InAppLogin(loginState.wrongCredentials, onLoginClick, onSignupClick)
     }
 }

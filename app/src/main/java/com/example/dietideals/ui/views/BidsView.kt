@@ -20,6 +20,7 @@ import com.example.dietideals.ui.components.SwipeRefresh
 fun BidsView(
     bidderUserState: UserState.Bidder,
     onAuctionClicked: (Auction, Boolean) -> Unit,
+    onAuctioneerClick: (String) -> Unit,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier
@@ -42,7 +43,7 @@ fun BidsView(
             ) {
                 val bids = buyer.bids
                 items(bids.size) { index ->
-                    MyBidAuctionCard(bids[index].auction!!, onAuctionClicked)
+                    MyBidAuctionCard(bids[index].auction!!, onAuctionClicked, onAuctioneerClick)
                 }
             }
         }

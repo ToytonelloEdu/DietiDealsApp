@@ -22,12 +22,13 @@ fun HomeView(
     fetchState: HomeFetchState,
     showAll: Boolean,
     onAuctionClicked: (Auction, Boolean) -> Unit,
+    onAuctioneerClicked: (String) -> Unit,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (fetchState) {
-        is HomeFetchState.HomeSuccess -> SuccessHomeView(fetchState.auctions, fetchState.isRefreshing, onAuctionClicked, onRefresh, modifier, showAll)
-        is HomeFetchState.Error -> SuccessHomeView(fetchState.auctions, fetchState.isRefreshing, onAuctionClicked, onRefresh, modifier)
+        is HomeFetchState.HomeSuccess -> SuccessHomeView(fetchState.auctions, fetchState.isRefreshing, onAuctionClicked , onAuctioneerClicked, onRefresh, modifier, showAll)
+        is HomeFetchState.Error -> SuccessHomeView(fetchState.auctions, fetchState.isRefreshing, onAuctionClicked, onAuctioneerClicked, onRefresh, modifier)
         else -> LoadingView(modifier.fillMaxSize())
     }
 
@@ -38,6 +39,7 @@ private fun SuccessHomeView(
     auctions: List<Auction>,
     isRefreshing: Boolean,
     onAuctionClicked: (Auction, Boolean) -> Unit,
+    onAuctioneerClicked: (String) -> Unit,
     onRefresh: () -> Unit,
     modifier: Modifier = Modifier,
     showAll: Boolean = false
@@ -66,7 +68,7 @@ private fun SuccessHomeView(
 
                 items(auctions.size) { index ->
                     if (showAll || !auctions[index].hasBeenOverFor(3))
-                        HomeAuctionCard(auctions[index], onAuctionClicked)
+                        HomeAuctionCard(auctions[index], onAuctionClicked, onAuctioneerClicked)
                 }
             }
         }
@@ -80,5 +82,6 @@ fun HomeViewPreview() {
             HomeFetchState.HomeSuccess(auctions = emptyList()),
             false,
             { _, _ -> },
+            {},
             {})
 }

@@ -91,6 +91,7 @@ fun AuctionDetailsView(
     currentState: AuctionFetchState,
     directBid: Boolean,
     onSubmit: (Auction, Double) -> Unit,
+    onAuctioneerClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when (currentState) {
@@ -99,7 +100,7 @@ fun AuctionDetailsView(
         is AuctionFetchState.AuctionSuccess -> {
             val auction = currentState.auction
             val primaryColor = auction.medianColor ?: MaterialTheme.colorScheme.primary
-            SuccessAuctionDetails(currentState, primaryColor) { auct ->
+            SuccessAuctionDetails(currentState, primaryColor, onAuctioneerClick) { auct ->
                 Column (Modifier.fillMaxWidth(), Arrangement.Center, Alignment.CenterHorizontally) {
 
                     AuctionInteractionCard(
@@ -111,7 +112,7 @@ fun AuctionDetailsView(
                         }
                     }
 
-                    if(auct is IncrementalAuction) IncrementalBidsModalSheet(primaryColor, auct)
+                    if(auct is IncrementalAuction) IncrementalBidsModalSheet(primaryColor, auct, onAuctioneerClick)
                 }
             }
         }
@@ -122,6 +123,7 @@ fun AuctionDetailsView(
 fun SuccessAuctionDetails(
     successState: AuctionFetchState.AuctionSuccess,
     primaryColor: Color,
+    onAuctioneerClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     centerContent: @Composable (Auction) -> Unit
 ) {
@@ -133,7 +135,7 @@ fun SuccessAuctionDetails(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        AuctionInfoColumn(auction, primaryColor, auction.pictures)
+        AuctionInfoColumn(auction, primaryColor, auction.pictures, onAuctioneerClick)
         centerContent(auction)
         AuctionTagsGrid(auction.tags, primaryColor)
 
@@ -141,7 +143,7 @@ fun SuccessAuctionDetails(
 }
 
 @Composable
-fun AuctionInfoColumn(auction: Auction, primaryColor: Color, photos: List<String>) {
+fun AuctionInfoColumn(auction: Auction, primaryColor: Color, photos: List<String>, onAuctioneerClick: (String) -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxWidth(),
@@ -156,7 +158,8 @@ fun AuctionInfoColumn(auction: Auction, primaryColor: Color, photos: List<String
                 .fillMaxWidth()
                 .padding(top = 16.dp)
                 .padding(horizontal = 24.dp),
-            170.dp
+            170.dp,
+            onAuctioneerClick
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
@@ -209,15 +212,17 @@ fun PhotosLazyRow(primaryColor: Color, photos: List<String>) {
                 Box (
                     modifier = Modifier
                         .fillMaxHeight()
+                        .aspectRatio(1f)
                         .padding(4.dp)
                         .background(primaryColor),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.ic_broken_image),
+                        painter = painterResource(R.drawable.filled_auction_ic),
                         contentDescription = "No photos found",
                         modifier = Modifier
-                            .size(120.dp),
+                            .size(120.dp)
+                            .padding(16.dp),
                         tint = Color.White
                     )
                 }
@@ -483,6 +488,7 @@ fun ExpLabelIconText(auction: SilentAuction, primaryColor: Color) {
 private fun IncrementalBidsModalSheet(
     primaryColor: Color,
     auction: IncrementalAuction,
+    onBidderClick: (String) -> Unit
 ) {
     var showBids by rememberSaveable { mutableStateOf(false) }
     ShowBidsButton(showBids, { showBids = !showBids }, Modifier)
@@ -514,7 +520,8 @@ private fun IncrementalBidsModalSheet(
                         auction,
                         auction.bids[reverseIndex],
                         it,
-                        primaryColor = primaryColor
+                        primaryColor = primaryColor,
+                        onBidderClick = onBidderClick
                     )
                 }
             }

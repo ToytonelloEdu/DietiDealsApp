@@ -54,6 +54,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -248,7 +249,8 @@ private fun StaticFieldsRow(
         AuctioneerIconText(
             auctioneer = newAuction.auctioneer.value!!.username,
             primaryColor = MaterialTheme.colorScheme.primary,
-            underlineDistance = 4.dp
+            underlineDistance = 4.dp,
+            onClick = {}
         )
         CalendarIconText(
             date = newAuction.date.value,
@@ -527,11 +529,11 @@ fun ExpiryDateSelector(newAuction: NewAuction, onValueChange: (NewAuction) -> Un
 }
 
 @Composable
-fun AddTagPill(primaryColor: Color, onClick: () -> Unit) {
+fun AddTagPill(primaryColor: Color, height: Dp = 30.dp, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .clip(RoundedCornerShape(14.dp))
-            .height(30.dp)
+            .height(height)
             .background(primaryColor)
             .wrapContentWidth()
             .clickable { onClick() },

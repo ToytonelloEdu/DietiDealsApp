@@ -50,8 +50,9 @@ import com.example.dietideals.ui.components.TimerIconText
 @Composable
 fun MyAuctionDetailsView(
     currentState: AuctionFetchState,
-    onAccept: () -> Unit,
+    onAccept: (Auction, Bid) -> Unit,
     modifier: Modifier = Modifier,
+    onAuctioneerClick: (String) -> Unit,
 ) {
     when (currentState) {
         is AuctionFetchState.Loading -> LoadingView(modifier.fillMaxSize())
@@ -59,7 +60,7 @@ fun MyAuctionDetailsView(
         is AuctionFetchState.AuctionSuccess -> {
             val auction = currentState.auction
             val primaryColor = auction.medianColor ?: MaterialTheme.colorScheme.primary
-            SuccessAuctionDetails(currentState, primaryColor, modifier) { auct ->
+            SuccessAuctionDetails(currentState, primaryColor, {}, modifier) { auct ->
                 Column (
                     modifier = Modifier
                         .fillMaxWidth()
@@ -68,7 +69,9 @@ fun MyAuctionDetailsView(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Row(
-                        Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 8.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -88,7 +91,7 @@ fun MyAuctionDetailsView(
                             )
                         }
                     }
-                    MyAuctionInteractionCard(auction = auct, primaryColor = primaryColor, onAccept = onAccept)
+                    MyAuctionInteractionCard(auction = auct, primaryColor = primaryColor, onAccept = onAccept, onBidderClick = onAuctioneerClick)
                 }
             }
         }
@@ -100,7 +103,8 @@ fun MyAuctionInteractionCard(
     auction: Auction,
     primaryColor: Color,
     modifier: Modifier = Modifier,
-    onAccept: () -> Unit
+    onBidderClick: (String) -> Unit,
+    onAccept: (Auction, Bid) -> Unit
 ) {
     Box(
         modifier = modifier
@@ -122,8 +126,18 @@ fun MyAuctionInteractionCard(
                 items(bids.size) {
                     val reverseIndex = (bids.size -1) - it
                     when (auction) {
-                        is SilentAuction -> SilentBidPill(bids[reverseIndex], onAccept, primaryColor = primaryColor)
-                        is IncrementalAuction -> IncrementalBidPill(auction, bids[reverseIndex], it, primaryColor = primaryColor)
+                        is IncrementalAuction -> IncrementalBidPill(auction, bids[reverseIndex], it, primaryColor = primaryColor, onBidderClick= onBidderClick)
+                        is SilentAuction -> {
+                            val winner = (bids[reverseIndex].bidder ?: bids[reverseIndex].buyer?.username) == auction.acceptedBid?.bidder
+                            SilentBidPill(
+                                bid = bids[reverseIndex],
+                                onAccept = { bid -> onAccept(auction, bid) },
+                                primaryColor = primaryColor,
+                                onBidderClick = onBidderClick,
+                                enabled = !auction.isAuctionOver(),
+                                winner = winner
+                            )
+                        }
                     }
                 }
             }
@@ -134,9 +148,12 @@ fun MyAuctionInteractionCard(
 @Composable
 fun SilentBidPill(
     bid: Bid,
-    onAccept: () -> Unit,
+    onAccept: (Bid) -> Unit,
+    enabled: Boolean,
     modifier: Modifier = Modifier,
-    primaryColor: Color = MaterialTheme.colorScheme.primary
+    primaryColor: Color = MaterialTheme.colorScheme.primary,
+    onBidderClick: (String) -> Unit,
+    winner: Boolean = false,
 ) {
     Column(
         modifier = modifier
@@ -149,7 +166,11 @@ fun SilentBidPill(
             .fillMaxWidth()
             .defaultMinSize(minHeight = 40.dp)
             .padding(8.dp)
-            .border(1.dp, primaryColor, RoundedCornerShape(topStart = 5.dp, bottomEnd = 5.dp))
+            .border(
+                width = 1.dp,
+                color = if(winner) Color(0xFFDFBC0A) else primaryColor,
+                shape = RoundedCornerShape(topStart = 5.dp, bottomEnd = 5.dp)
+            )
             .clip(RoundedCornerShape(topStart = 5.dp, bottomEnd = 5.dp))
             .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -165,7 +186,7 @@ fun SilentBidPill(
             verticalAlignment = Alignment.CenterVertically
         ) {
             AmountIconText(bid.amount, primaryColor)
-            BuyerIconText(bid.bidder ?: bid.buyer?.username ?: "Unknown", primaryColor)
+            BuyerIconText(bid.bidder ?: bid.buyer?.username ?: "Unknown", primaryColor, onBidderClick)
             ExpandButton(isExpanded, { isExpanded = !isExpanded }, primaryColor)
         }
         if (isExpanded) {
@@ -177,7 +198,7 @@ fun SilentBidPill(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 DateIconText(bid.timeToDate(), primaryColor, underlineLength = 135.dp)
-                AcceptButton(onAccept, primaryColor)
+                AcceptButton({onAccept(bid)}, enabled, primaryColor)
             }
         }
     }
@@ -190,6 +211,7 @@ fun IncrementalBidPill(
     index: Int,
     primaryColor: Color,
     modifier: Modifier = Modifier,
+    onBidderClick: (String) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -211,7 +233,7 @@ fun IncrementalBidPill(
         ) {
             AmountIconText(bid.amount, primaryColor)
             Spacer(modifier = Modifier.width(12.dp))
-            BuyerIconText(bid.bidder ?: bid.buyer?.username ?: "Unknown", primaryColor)
+            BuyerIconText(bid.bidder ?: bid.buyer?.username ?: "Unknown", primaryColor, onBidderClick)
         }
         if (index == 0) {
             Row(
