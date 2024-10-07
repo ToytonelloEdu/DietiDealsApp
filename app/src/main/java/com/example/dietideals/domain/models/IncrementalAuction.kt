@@ -1,10 +1,12 @@
 package com.example.dietideals.domain.models
 
+import androidx.annotation.IntRange
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.example.dietideals.data.network.serializables.NetAuction
 import com.example.dietideals.data.persistence.entities.DbAuction
 import com.example.dietideals.domain.auxiliary.Seconds
+import java.sql.Time
 import java.sql.Timestamp
 
 data class IncrementalAuction (
@@ -106,7 +108,8 @@ data class IncrementalAuction (
         return ! calculateRemainingTime().isTimeRemaining()
     }
 
-    override fun hasBeenOverFor(days: Int): Boolean {
+    override fun hasBeenOverFor(@IntRange(from = 0, to = 14) days: Int): Boolean {
+        if(days < 0 || days > 14) throw IllegalArgumentException("Days has to be between 0 and 14")
         if(isAuctionOver()) {
             val end = if (lastBid != null) {
                     Timestamp(lastBid.time.time + timeInterval * 1000)
