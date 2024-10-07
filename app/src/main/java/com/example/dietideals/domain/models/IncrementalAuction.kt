@@ -144,7 +144,7 @@ data class IncrementalAuction (
     override fun toDbAuction(): DbAuction {
         return DbAuction(
             id = id!!,
-            picture = pictures.first(),
+            picture = pictures.firstOrNull() ?: "no_picture",
             medianColor = medianColor?.toArgb()?.let{Integer.toHexString(it)},
             objectName = objectName,
             description = description,

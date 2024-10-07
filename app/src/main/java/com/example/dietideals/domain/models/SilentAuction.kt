@@ -21,7 +21,8 @@ data class SilentAuction(
     override val date: Timestamp,
     override val bids: MutableList<Bid>,
     override val tags: List<Tag>,
-    val expirationDate: Timestamp
+    val expirationDate: Timestamp,
+    val acceptedBid: Bid? = null
 ) : Auction(id, pictures, medianColor, objectName, description, auctioneer, auctioneerUsername, date, bids, tags) {
 
     constructor(netAuction: NetAuction) : this(
@@ -43,7 +44,8 @@ data class SilentAuction(
             netAuction.expirationDate!!
                 .replace("Z[UTC]", "")
                 .replaceFirst("T", " ")
-        )
+        ),
+        netAuction.acceptedBid?.let{ Bid(it) }
     )
 
     constructor(dbAuction: DbAuction) : this(
@@ -74,6 +76,7 @@ data class SilentAuction(
     }
 
     override fun isAuctionOver() : Boolean {
+        if (acceptedBid != null) return true
         return Timestamp(System.currentTimeMillis()) >= expirationDate
     }
 
@@ -98,7 +101,8 @@ data class SilentAuction(
             bids = emptyList(),
             tags = tags.map { it.toNetTag() },
             expirationDate = expirationDate.toString().replace(" ", "T") + "Z[UTC]",
-            auctionType = "SilentAuction"
+            auctionType = "SilentAuction",
+            acceptedBid = acceptedBid?.toNetBid()
         )
     }
 

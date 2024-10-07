@@ -9,6 +9,7 @@ data class Links(
     val facebook: String? = null
 ) {
     fun toNetLinks() = NetLinks(
+        //null,
         website,
         instagram,
         twitter,

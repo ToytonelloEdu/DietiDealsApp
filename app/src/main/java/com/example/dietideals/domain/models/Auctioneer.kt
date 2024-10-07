@@ -83,7 +83,7 @@ data class Auctioneer(
             nationality = nationality,
             gender = gender,
             birthdate = birthdate.toString().replace(" ", "T") + "Z[UTC]",
-            //website = links.website, ....,
+            //website = socials.website, ....,
             userType = "Auctioneer"
         )
     }

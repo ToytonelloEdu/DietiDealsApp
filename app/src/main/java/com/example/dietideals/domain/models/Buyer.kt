@@ -64,6 +64,7 @@ data class Buyer(
             nationality = nationality,
             gender = gender,
             birthdate = birthdate.toString().replace(" ", "T") + "Z[UTC]",
+            links = links?.toNetLinks(),
             bids = emptyList(),
             auctions = null,
             userType = "Buyer"
