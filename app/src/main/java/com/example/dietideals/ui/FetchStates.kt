@@ -2,6 +2,7 @@ package com.example.dietideals.ui
 
 import com.example.dietideals.domain.auxiliary.NewAuction
 import com.example.dietideals.domain.auxiliary.NewUser
+import com.example.dietideals.domain.auxiliary.ProfileForm
 import com.example.dietideals.domain.auxiliary.SearchQuery
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.Auctioneer
@@ -52,6 +53,12 @@ sealed interface AuctionFetchState {
     data class Error(val message: String? = null) : AuctionFetchState
 }
 
+sealed interface ProfileFetchState {
+    data class ProfileSuccess(val user: User) : ProfileFetchState
+    data object Loading : ProfileFetchState
+    data class Error(val message: String? = null) : ProfileFetchState
+}
+
 sealed class SignUpState (val newUser: NewUser) {
     class Initial(newUser: NewUser, val formInvalid: Boolean = false) : SignUpState(newUser)
     class Loading(newUser: NewUser) : SignUpState(newUser)
@@ -71,4 +78,11 @@ sealed class SearchQueryState(val searchQuery: SearchQuery) {
     class Loading(searchQuery: SearchQuery) : SearchQueryState(searchQuery)
     class Success(searchQuery: SearchQuery) : SearchQueryState(searchQuery)
     class Error(searchQuery: SearchQuery, val message: String? = null) : SearchQueryState(searchQuery)
+}
+
+sealed class ProfileEditState(val profileForm: ProfileForm) {
+    class Initial(profileForm: ProfileForm) : ProfileEditState(profileForm)
+    class Loading(profileForm: ProfileForm) : ProfileEditState(profileForm)
+    class Success(profileForm: ProfileForm) : ProfileEditState(profileForm)
+    class Error(profileForm: ProfileForm, val message: String? = null) : ProfileEditState(profileForm)
 }

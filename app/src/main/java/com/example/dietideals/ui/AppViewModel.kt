@@ -1,6 +1,7 @@
 package com.example.dietideals.ui
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.Companion.APPLICATION_KEY
@@ -19,10 +20,13 @@ import com.example.dietideals.domain.SearchUseCase
 import com.example.dietideals.domain.auxiliary.FormField
 import com.example.dietideals.domain.auxiliary.NewAuction
 import com.example.dietideals.domain.auxiliary.NewUser
+import com.example.dietideals.domain.auxiliary.ProfileForm
 import com.example.dietideals.domain.auxiliary.SearchQuery
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.Auctioneer
+import com.example.dietideals.domain.models.Bid
 import com.example.dietideals.domain.models.Buyer
+import com.example.dietideals.domain.models.User
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -194,11 +198,15 @@ class AppViewModel(
     }
 
     fun showNotificationsDialog(show: Boolean = !_uiState.value.showNotificationsDialog) {
-        _uiState.update {
-            it.copy(
-                showNotificationsDialog = show,
-                showSearchDialog = false
-            )
+        viewModelScope.launch {
+            if (show) notificationsUseCase.refreshNotifications(_uiState)
+
+            _uiState.update {
+                it.copy(
+                    showNotificationsDialog = show,
+                    showSearchDialog = false
+                )
+            }
         }
     }
 
@@ -211,6 +219,66 @@ class AppViewModel(
     fun onSearchSubmit(query: SearchQuery) {
         viewModelScope.launch {
             searchUseCase.searchAuctions(_uiState, query)
+        }
+    }
+
+    fun onProfileEditStart() {
+        val user = AuthenticationUseCase.user!!
+        _uiState.update { currentState ->
+            val profileForm = currentState.profileEditState.profileForm
+            copyProfileInfos(profileForm, user)
+            currentState.copy(
+                isEditingProfile = true,
+            )
+        }
+    }
+
+    fun onProfileEditConfirm(profileForm: ProfileForm, context: Context) {
+        viewModelScope.launch {
+            val success = authenticationUseCase.editUserProfile(_uiState, profileForm) {uri, username ->
+                imageUploadUseCase.uploadProfileImage(context, username, uri)
+            }
+            if(success) onProfileEditCancel()
+        }
+
+    }
+
+    fun onProfileEditCancel() {
+        _uiState.update { currentState ->
+            currentState.copy(
+                isEditingProfile = false,
+                profileEditState = ProfileEditState.Initial(ProfileForm())
+            )
+        }
+    }
+
+    fun onProfileFormChanged(it: ProfileForm) {
+        _uiState.update { currentState ->
+            currentState.copy(profileEditState = ProfileEditState.Initial(it))
+        }
+    }
+
+    private fun copyProfileInfos(
+        profileForm: ProfileForm,
+        user: User,
+    ) {
+        profileForm.bio.value = user.bio
+        profileForm.nationality.value = user.nationality
+        profileForm.website.value = user.links?.website
+        profileForm.instagram.value = user.links?.instagram
+        profileForm.facebook.value = user.links?.facebook
+        profileForm.twitter.value = user.links?.twitter
+    }
+
+    fun onAuctioneerClicked(username: String) {
+        viewModelScope.launch {
+            authenticationUseCase.getUser(_uiState, username)
+        }
+    }
+
+    fun onAuctionAccept(auction: Auction, bid: Bid) {
+        viewModelScope.launch {
+            auctioneerUseCase.acceptBid(_uiState, auction, bid)
         }
     }
 
@@ -227,6 +295,9 @@ class AppViewModel(
                 val tagsRepository = application.container.tagsRepository
                 val imagesRepository = application.container.imagesRepository
                 val bidsRepository = application.container.bidsRepository
+                val notificationsRepository = application.container.notificationsRepository
+                val offlineNotificationsRepository = application.offlineContainer.notificationsRepository
+
                 AppViewModel(
                     homePageUseCase = HomePageUseCase(auctionsRepository, offlineAuctionsRepository),
                     authenticationUseCase = AuthenticationUseCase(authRepository, usersRepository, offlineUsersRepository),
@@ -234,7 +305,7 @@ class AppViewModel(
                     buyerUseCase = BuyerUseCase(bidsRepository),
                     imageUploadUseCase = ImageUploadUseCase(imagesRepository),
                     searchUseCase = SearchUseCase(auctionsRepository),
-                    notificationsUseCase = NotificationsUseCase(application.applicationContext)
+                    notificationsUseCase = NotificationsUseCase(notificationsRepository, offlineNotificationsRepository, offlineUsersRepository)
                 )
             }
         }
