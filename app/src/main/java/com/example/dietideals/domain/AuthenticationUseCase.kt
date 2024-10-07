@@ -1,13 +1,18 @@
 package com.example.dietideals.domain
 
+import android.net.Uri
 import android.util.Log
 import com.example.dietideals.data.AppUiState
 import com.example.dietideals.data.repos.AuthRepository
 import com.example.dietideals.data.repos.UsersRepository
 import com.example.dietideals.domain.auxiliary.NewUser
+import com.example.dietideals.domain.auxiliary.ProfileForm
 import com.example.dietideals.domain.models.Auctioneer
 import com.example.dietideals.domain.models.Buyer
+import com.example.dietideals.domain.models.Links
 import com.example.dietideals.domain.models.User
+import com.example.dietideals.ui.ProfileEditState
+import com.example.dietideals.ui.ProfileFetchState
 import com.example.dietideals.ui.SignUpState
 import com.example.dietideals.ui.UserState
 import kotlinx.coroutines.Dispatchers
@@ -94,6 +99,7 @@ class AuthenticationUseCase (
                         token = it
                     }
                 }
+                updateUserStateByHandle(state, user!!.username, user!!.password!!)
             }catch (http: HttpException) {
                 if(http.code() == 401) {
                     logOut(state)
@@ -120,6 +126,67 @@ class AuthenticationUseCase (
         user = null
     }
 
+    suspend fun editUserProfile(
+        state: MutableStateFlow<AppUiState>,
+        profileForm: ProfileForm,
+        image: suspend (Uri, String) -> Unit,
+    ): Boolean {
+        try {
+            if (!profileForm.isValid) throw IllegalArgumentException("Invalid profile")
+
+            val newUser = updateProfileInfos(profileForm)
+            state.update { it.copy(profileEditState = ProfileEditState.Loading(profileForm)) }
+
+            withContext(Dispatchers.IO) {
+                onlineUsersRepo.updateUser(newUser, token)
+
+                if (profileForm.photo != null)
+                    image(profileForm.photo!!, newUser.username)
+            }
+
+            state.update { it.copy(profileEditState = ProfileEditState.Success(profileForm)) }
+            updateUserStateByHandle(state, user!!.username, user!!.password!!)
+            return true
+        } catch (e: Exception) {
+            Log.e("AppViewModel", "Error: ${e.message}")
+            state.update {
+                it.copy(profileEditState = ProfileEditState.Error(profileForm, e.message))
+            }
+            return false
+        }
+    }
+
+    private fun updateProfileInfos(profileForm: ProfileForm) =
+        when (val user = user!!) {
+            is Auctioneer -> {
+                user.copy(
+                    links = Links(
+                        profileForm.website.value,
+                        profileForm.instagram.value,
+                        profileForm.twitter.value,
+                        profileForm.facebook.value
+                    ),
+                    bio = profileForm.bio.value,
+                    nationality = profileForm.nationality.value,
+                )
+            }
+
+            is Buyer -> {
+                user.copy(
+                    links = Links(
+                        profileForm.website.value,
+                        profileForm.instagram.value,
+                        profileForm.twitter.value,
+                        profileForm.facebook.value
+                    ),
+                    bio = profileForm.bio.value,
+                    nationality = profileForm.nationality.value,
+                )
+            }
+
+            else -> throw IllegalArgumentException("User type not found")
+        }
+
 
     private suspend fun updateUserStateByHandle(
         state: MutableStateFlow<AppUiState>,
@@ -134,17 +201,34 @@ class AuthenticationUseCase (
                     currentState.copy(userState = UserState.Vendor(onlineUser))
                 }
                 withContext(Dispatchers.IO) { offlineUsersRepo.addUser(onlineUser.copy(password = password)) }
+                user = onlineUser.copy(password = password)
             }
             is Buyer -> {
                 state.update { currentState ->
                     currentState.copy(userState = UserState.Bidder(onlineUser))
                 }
                 withContext(Dispatchers.IO) { offlineUsersRepo.addUser(onlineUser.copy(password = password)) }
+                user = onlineUser.copy(password = password)
             }
             else -> throw IllegalArgumentException("NetUser type not found")
         }
-        user = onlineUser
+    }
 
+    suspend fun getUser(state: MutableStateFlow<AppUiState>, username: String) {
+        try {
+            val otherUser: User
+            withContext(Dispatchers.IO) {
+                otherUser = onlineUsersRepo.getUserByHandle(username)
+            }
+            state.update { currentState ->
+                currentState.copy(otherUserState = ProfileFetchState.ProfileSuccess(otherUser))
+            }
+        } catch (e: Exception) {
+            Log.e("AppViewModel", "Error: ${e.message}")
+            state.update { currentState ->
+                currentState.copy(otherUserState = ProfileFetchState.Error(e.message))
+            }
+        }
     }
 
     companion object{
