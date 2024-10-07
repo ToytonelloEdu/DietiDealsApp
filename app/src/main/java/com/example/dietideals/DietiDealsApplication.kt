@@ -25,7 +25,8 @@ class DietiDealsApplication : Application() {
             Configuration.Builder()
                 .setWorkerFactory(NotificationWorkerFactory(
                     container.notificationsRepository,
-                    offlineContainer.notificationsRepository
+                    offlineContainer.notificationsRepository,
+                    offlineContainer.usersRepository
                 ))
                 .build()
         )
