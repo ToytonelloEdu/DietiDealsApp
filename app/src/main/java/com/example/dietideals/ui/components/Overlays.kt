@@ -1,5 +1,6 @@
 package com.example.dietideals.ui.components
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,6 +19,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -28,6 +36,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -39,12 +48,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.example.dietideals.domain.auxiliary.SearchQuery
+import com.example.dietideals.domain.models.Auctioneer
+import com.example.dietideals.domain.models.IncrementalAuction
+import com.example.dietideals.domain.models.Notification
 import com.example.dietideals.domain.models.SilentAuction
 import com.example.dietideals.domain.models.Tag
 import com.example.dietideals.ui.theme.DietiDealsTheme
 import com.example.dietideals.ui.views.AddTagPill
 import com.example.dietideals.ui.views.TagPill
 import com.example.dietideals.ui.views.TagsIconLabel
+import java.sql.Timestamp
 
 @Composable
 fun SilentConfirmDialog(
@@ -91,6 +104,111 @@ fun SilentConfirmDialog(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun EditWebsiteDialog(
+    correctUrl: Boolean,
+    onDismiss: () -> Unit,
+    onConfirm: (String) -> Unit
+) {
+    Dialog(onDismissRequest = {
+        onDismiss()
+    }) {
+        var website by rememberSaveable { mutableStateOf("") }
+        Column(
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.Start,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(8.dp)
+
+        ) {
+            Text(text = "Insert your website url:")
+            TextField(
+                value = website, onValueChange = {website = it},
+                isError = !correctUrl,
+                supportingText = { if(!correctUrl) Text(text = "This is not a URL")}
+            )
+            ConfirmButton(onConfirm = { onConfirm(website) })
+        }
+    }
+}
+
+@Composable
+fun AddSocialsDialog(
+    absentSocials: List<String>,
+    onDismiss: () -> Unit,
+    onConfirm: (String, String) -> Unit
+) {
+    Dialog(onDismissRequest = {
+        onDismiss()
+    }) {
+        var showMenu by rememberSaveable { mutableStateOf(false) }
+        var selectedSocial by rememberSaveable { mutableStateOf<String?>(null) }
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterVertically),
+            horizontalAlignment = Alignment.Start,
+            modifier = Modifier
+                .background(MaterialTheme.colorScheme.background)
+                .padding(16.dp)
+        ) {
+            Box(
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(50.dp)
+                        .background(Color.White)
+                        .border(
+                            1.dp,
+                            MaterialTheme.colorScheme.primary,
+                            RoundedCornerShape(8.dp)
+                        )
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable {
+                            showMenu = true
+                        }
+                ){
+                    Text(
+                        text = selectedSocial ?: "Select a Social",
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                    Icon(
+                        imageVector = if (showMenu) Icons.Default.KeyboardArrowUp
+                        else Icons.Default.ArrowDropDown,
+                        contentDescription = null,
+                        modifier = Modifier.padding(end = 8.dp)
+                    )
+                }
+                DropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                    absentSocials.forEach {
+                        Log.i("Overlays", it)
+                        DropdownMenuItem(
+                            text = { Text(text = it) },
+                            onClick = { selectedSocial = it; showMenu = false }
+                        )
+                    }
+                }
+            }
+            Text(text = "Insert your socials url:")
+            var socialUrl by rememberSaveable { mutableStateOf("") }
+            TextField(
+                value = socialUrl, onValueChange = {socialUrl = it},
+                //isError = !correctUrl,
+                //supportingText = { if(!correctUrl) Text(text = "This is not a URL")}
+            )
+            ConfirmButton(
+                enabled = selectedSocial != null,
+                onConfirm = { onConfirm(selectedSocial!!, socialUrl) }
+            )
+        }
+
+
     }
 }
 
@@ -152,7 +270,7 @@ fun SearchDialog(
                 label = { Text("Auctioneer") },
                 leadingIcon = { AuctioneerIcon(primaryColor = primaryColor) }
             )
-            TagPillsRow(tags = searchQuery.tags.value, screenFraction = screenFraction) {
+            SearchTagPillsRow(tags = searchQuery.tags.value, screenFraction = screenFraction) {
                 onValueChange(searchQuery)
             }
             Row(
@@ -171,8 +289,8 @@ fun SearchDialog(
 
 @Composable
 fun NotificationsDialog(
-    notifications: List<String>,
-    onNotificationClick: (String) -> Unit,
+    notifications: List<Notification>,
+    onNotificationClick: (Notification) -> Unit,
     onValueChange: () -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
@@ -193,7 +311,7 @@ fun NotificationsDialog(
             modifier = modifier
                 .padding(top = 16.dp, end = 16.dp)
                 .fillMaxWidth(screenFraction)
-                .fillMaxHeight(screenFraction/1.25f)
+                .fillMaxHeight(screenFraction / 1.25f)
                 .background(Color.White)
                 .border(1.dp, primaryColor)
                 .pointerInput(Unit) {
@@ -211,9 +329,9 @@ fun NotificationsDialog(
                         verticalArrangement = Arrangement.Top
                     ) {
                         items(notifications.size) {
-                            Text(
-                                notifications[it],
-                                modifier = Modifier.clickable { onNotificationClick(notifications[it]) }
+                            NotificationCard(
+                                notification = notifications[it],
+                                onNotificationClick = onNotificationClick
                             )
                         }
                     }
@@ -221,7 +339,9 @@ fun NotificationsDialog(
                     Text("No Notifications")
                 }
                 Row(
-                    Modifier.fillMaxSize().padding(horizontal = 8.dp),
+                    Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp),
                     verticalAlignment = Alignment.Bottom,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -235,7 +355,7 @@ fun NotificationsDialog(
 
 
 @Composable
-private fun TagPillsRow(
+private fun SearchTagPillsRow(
     tags: MutableList<String>,
     screenFraction: Float,
     onValueChange: () -> Unit,
@@ -307,12 +427,89 @@ private fun TagPillsRow(
 }
 
 
+
+
 @Preview(showBackground = false, showSystemUi = true)
 @Composable
 fun PreviewNotificationsDialog() {
     DietiDealsTheme {
         NotificationsDialog(
-            notifications = listOf("Ciro è scemo"),
+            notifications = listOf(
+                Notification(
+                    1,
+                    IncrementalAuction(
+                        1,
+                        emptyList(),
+                        Color.Cyan,
+                        "test",
+                        "test",
+                        null,
+                        "Toytonello",
+                        Timestamp(System.currentTimeMillis()),
+                        mutableListOf(),
+                        null,
+                        listOf(Tag("test")),
+                        3600,
+                        5.0,
+                        1.0
+                    ),
+                    Auctioneer(
+                        "test",
+                        "test",
+                        "test",
+                        "test",
+                        "test",
+                        "test",
+                        "test",
+                        "test",
+                        "test",
+                        Timestamp(System.currentTimeMillis()),
+                        null,
+                        mutableListOf()
+                    ),
+                    Timestamp(System.currentTimeMillis()),
+                    "OWNER",
+                    read = false,
+                    received = true
+                ),
+                Notification(
+                    1,
+                    IncrementalAuction(
+                        1,
+                        emptyList(),
+                        Color.Cyan,
+                        "test",
+                        "test",
+                        null,
+                        "Toytonello",
+                        Timestamp(System.currentTimeMillis()),
+                        mutableListOf(),
+                        null,
+                        listOf(Tag("test")),
+                        3600,
+                        5.0,
+                        1.0
+                    ),
+                    Auctioneer(
+                        "test",
+                        "test",
+                        "test",
+                        "test",
+                        "test",
+                        "test",
+                        "test",
+                        "test",
+                        "test",
+                        Timestamp(System.currentTimeMillis()),
+                        null,
+                        mutableListOf()
+                    ),
+                    Timestamp(System.currentTimeMillis()),
+                    "OWNER",
+                    read = true,
+                    received = true
+                ),
+            ),
             onValueChange = {},
             onDismiss = {},
             onNotificationClick = {}

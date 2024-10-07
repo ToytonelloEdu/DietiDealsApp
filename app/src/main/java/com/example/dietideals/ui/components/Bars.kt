@@ -28,6 +28,7 @@ import com.example.dietideals.R
 import com.example.dietideals.ui.UserState
 import com.example.dietideals.ui.AppView
 import com.example.dietideals.ui.AuctionFetchState
+import com.example.dietideals.ui.ProfileFetchState
 import com.example.dietideals.ui.theme.topAppBarColors
 
 val upNavigableScreens = listOf(
@@ -69,7 +70,12 @@ fun AppTopBar(
 }
 
 @Composable
-fun textForTopBar(currentScreen: AppView, auctionState: AuctionFetchState, userState: UserState) : String {
+fun textForTopBar(
+    currentScreen: AppView,
+    auctionState: AuctionFetchState,
+    userState: UserState,
+    otherUserState: ProfileFetchState
+) : String {
     return when (currentScreen) {
         AppView.AuctionDetails,
         AppView.MyAuctionDetails,
@@ -85,6 +91,12 @@ fun textForTopBar(currentScreen: AppView, auctionState: AuctionFetchState, userS
             when (userState) {
                 is UserState.Vendor -> "@${userState.auctioneer.username}"
                 is UserState.Bidder -> "@${userState.buyer.username}"
+                else -> stringResource(id = currentScreen.title)
+            }
+        }
+        AppView.UserDetails -> {
+            when (otherUserState) {
+                is ProfileFetchState.ProfileSuccess -> "@${otherUserState.user.username}"
                 else -> stringResource(id = currentScreen.title)
             }
         }

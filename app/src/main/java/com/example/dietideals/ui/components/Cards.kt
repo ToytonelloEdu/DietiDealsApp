@@ -1,7 +1,6 @@
 package com.example.dietideals.ui.components
 
 import android.util.Log
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -28,8 +27,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -37,6 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -44,12 +52,14 @@ import coil.request.ImageRequest
 import com.example.dietideals.R
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.IncrementalAuction
+import com.example.dietideals.domain.models.Notification
 import com.example.dietideals.domain.models.SilentAuction
 
 @Composable
 fun HomeAuctionCard(
     auction: Auction,
     onAuctionClicked: (Auction, Boolean) -> Unit,
+    onAuctioneerClicked: (String) -> Unit,
     modifier: Modifier = Modifier,
     primaryColor: Color = auction.medianColor ?: MaterialTheme.colorScheme.primary
 ) {
@@ -68,7 +78,7 @@ fun HomeAuctionCard(
             Box(Modifier.fillMaxSize()) {
 
                 Column (Modifier.padding(16.dp)) {
-                    AuctionInfoRow(auction, primaryColor)
+                    AuctionInfoRow(auction, primaryColor, onAuctioneerClick = onAuctioneerClicked)
 
                     AuctionInteractionRow(auction, primaryColor, onAuctionClicked, Modifier.padding(top = 16.dp))
                 }
@@ -83,6 +93,7 @@ fun HomeAuctionCard(
 fun MyAuctionCard(
     auction: Auction,
     onAuctionClicked: (Auction) -> Unit,
+    onAuctioneerClicked: (String) -> Unit,
     modifier: Modifier = Modifier,
     primaryColor: Color = auction.medianColor ?: MaterialTheme.colorScheme.primary
 ) {
@@ -103,7 +114,7 @@ fun MyAuctionCard(
                         .fillMaxSize()
                         .padding(12.dp)
                 ) {
-                    MyAuctionInfoRow(auction, primaryColor)
+                    MyAuctionInfoRow(auction, primaryColor, onAuctioneerClicked)
                 }
             }
 
@@ -115,6 +126,7 @@ fun MyAuctionCard(
 fun MyBidAuctionCard(
     auction: Auction,
     onAuctionClicked: (Auction, Boolean) -> Unit,
+    onAuctioneerClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     primaryColor: Color = auction.medianColor ?: MaterialTheme.colorScheme.primary
 ) {
@@ -135,7 +147,7 @@ fun MyBidAuctionCard(
                         .fillMaxSize()
                         .padding(12.dp)
                 ) {
-                    MyBidAuctionInfoRow(auction, primaryColor, onAuctionClicked)
+                    MyBidAuctionInfoRow(auction, primaryColor, onAuctioneerClick, onAuctionClicked)
                 }
             }
 
@@ -147,6 +159,7 @@ fun MyBidAuctionCard(
 fun MyBidAuctionInfoRow(
     auction: Auction,
     primaryColor: Color,
+    onAuctioneerClick: (String) -> Unit,
     onAuctionClicked: (Auction, Boolean) -> Unit
 ) {
     Row (
@@ -157,7 +170,7 @@ fun MyBidAuctionInfoRow(
         val restUrl = stringResource(R.string.restapi_url)
         AsyncImage(
             model = ImageRequest.Builder(context = LocalContext.current)
-                .data("${restUrl}photos/${auction.pictures[0]}").build(),
+                .data("${restUrl}photos/${auction.pictures.firstOrNull() ?: "none"}").build(),
             contentDescription = null,
             modifier = Modifier
                 .fillMaxHeight()
@@ -166,7 +179,7 @@ fun MyBidAuctionInfoRow(
                 .border(1.dp, primaryColor, RoundedCornerShape(2.dp)),
             contentScale = ContentScale.Crop,
             placeholder = painterResource(id = R.drawable.loading_img),
-            error = painterResource(id = R.drawable.ic_broken_image),
+            error = painterResource(id = R.drawable.green_auction_ic),
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column(
@@ -177,12 +190,12 @@ fun MyBidAuctionInfoRow(
         ) {
             when (auction) {
                 is IncrementalAuction -> {
-                    IncrementalAuctionLastBid(auction, primaryColor)
+                    IncrementalAuctionLastBid(auction, primaryColor, onAuctioneerClick)
                     BidIconButton(auction, primaryColor, onAuctionClicked, Modifier.fillMaxWidth(), auction.timeInterval)
                 }
 
                 is SilentAuction -> {
-                    SilentAuctionLastBid(auction, primaryColor)
+                    SilentAuctionLastBid(auction, primaryColor, onAuctioneerClick)
                     BidIconButton(auction, primaryColor, onAuctionClicked, Modifier.fillMaxWidth())
                 }
             }
@@ -193,7 +206,7 @@ fun MyBidAuctionInfoRow(
 
 
 @Composable
-fun MyAuctionInfoRow(auction: Auction, primaryColor: Color) {
+fun MyAuctionInfoRow(auction: Auction, primaryColor: Color, onAuctioneerClick: (String) -> Unit) {
     Row (
         Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -212,7 +225,7 @@ fun MyAuctionInfoRow(auction: Auction, primaryColor: Color) {
                 .border(1.dp, primaryColor, RoundedCornerShape(2.dp)),
             contentScale = ContentScale.Crop,
             placeholder = painterResource(id = R.drawable.loading_img),
-            error = painterResource(id = R.drawable.ic_broken_image),
+            error = painterResource(id = R.drawable.green_auction_ic),
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column(
@@ -230,18 +243,18 @@ fun MyAuctionInfoRow(auction: Auction, primaryColor: Color) {
                 )
             )
             when (auction) {
-                is IncrementalAuction -> { IncrementalAuctionLastBid(auction, primaryColor)}
-                is SilentAuction -> { SilentAuctionLastBid(auction, primaryColor) }
+                is IncrementalAuction -> { IncrementalAuctionLastBid(auction, primaryColor, onAuctioneerClick)}
+                is SilentAuction -> { SilentAuctionLastBid(auction, primaryColor, onAuctioneerClick) }
             }
         }
     }
 }
 
 @Composable
-fun IncrementalAuctionLastBid(auction: IncrementalAuction, primaryColor: Color) {
+fun IncrementalAuctionLastBid(auction: IncrementalAuction, primaryColor: Color, onClick: (String) -> Unit) {
     val lastBid = auction.getLastBidOrBidsLast()
     if(lastBid != null){
-        BidderIconText(lastBid, primaryColor, Modifier.fillMaxWidth(), 210.dp, FontWeight.Medium)
+        BidderIconText(lastBid, primaryColor, Modifier.fillMaxWidth(), 210.dp, FontWeight.Medium, onClick)
         Row (
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -261,7 +274,7 @@ fun IncrementalAuctionLastBid(auction: IncrementalAuction, primaryColor: Color) 
 }
 
 @Composable
-fun SilentAuctionLastBid(auction: SilentAuction, primaryColor: Color) {
+fun SilentAuctionLastBid(auction: SilentAuction, primaryColor: Color, onAuctioneerClick: (String) -> Unit) {
     val lastBid = auction.bids.lastOrNull()
     if(lastBid != null){
         BidderIconText(
@@ -269,7 +282,8 @@ fun SilentAuctionLastBid(auction: SilentAuction, primaryColor: Color) {
             primaryColor = primaryColor,
             modifier = Modifier.fillMaxWidth(),
             underlineLength = 210.dp,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            onClick = onAuctioneerClick
         )
     } else {
         Text(
@@ -329,7 +343,12 @@ private fun AuctionTopBar(
 }
 
 @Composable
-private fun AuctionInfoRow(auction: Auction, primaryColor: Color, modifier: Modifier = Modifier) {
+private fun AuctionInfoRow(
+    auction: Auction,
+    primaryColor: Color,
+    modifier: Modifier = Modifier,
+    onAuctioneerClick: (String) -> Unit
+) {
     Row (
         modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -346,14 +365,14 @@ private fun AuctionInfoRow(auction: Auction, primaryColor: Color, modifier: Modi
                 .border(1.dp, primaryColor, RoundedCornerShape(2.dp)),
             contentScale = ContentScale.Crop,
             placeholder = painterResource(id = R.drawable.loading_img),
-            error = painterResource(id = R.drawable.ic_broken_image),
+            error = painterResource(id = R.drawable.green_auction_ic),
         )
         Column(
             modifier = Modifier.padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.Start
         ) {
-            AuctioneerIconText(auction, primaryColor)
+            AuctioneerIconText(auction, primaryColor, onClick = onAuctioneerClick)
             AuctionDescriptionText(auction)
         }
     }
@@ -427,5 +446,74 @@ private fun SilentAuctionInteraction(
     BidIconButton(auction, primaryColor, onAuctionClicked)
 }
 
+@Composable
+fun NotificationCard(
+    notification: Notification,
+    onNotificationClick: (Notification) -> Unit,
+    modifier: Modifier = Modifier,
+    primaryColor: Color = MaterialTheme.colorScheme.primary
+) {
+    val read = notification.read
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .height(60.dp)
+            .background(
+                color = if (read) Color.White else MaterialTheme.colorScheme.surfaceVariant,
+                shape = RoundedCornerShape(bottomStart = 5.dp ,bottomEnd = 5.dp)
+            )
+            .drawRoundedUnderline(primaryColor)
+            .clip(RoundedCornerShape(bottomStart = 5.dp ,bottomEnd = 5.dp))
+            .clickable { onNotificationClick(notification) },
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = notification.toString(),
+            style = TextStyle(
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = if(read) Color.Gray else Color.Black
 
+            ),
+            modifier = Modifier
+                .fillMaxSize(0.9f)
+                .padding(all = 8.dp)
+        )
+    }
+}
+
+fun Modifier.drawRoundedUnderline(
+    color: Color,
+    radius: Dp = 5.dp
+): Modifier {
+    return this.drawBehind {
+        val cornerRadiusPx = radius.toPx()
+
+        // Create a rounded rectangle path
+        val path = Path().apply {
+            addRoundRect(
+                RoundRect(
+                    left = 0f,
+                    top = 0f,
+                    right = size.width,
+                    bottom = size.height,
+                    bottomLeftCornerRadius = CornerRadius(cornerRadiusPx),
+                    bottomRightCornerRadius = CornerRadius(cornerRadiusPx)
+                ),
+            )
+        }
+
+        clipPath(path) {
+
+            // Draw Bottom Border
+            drawLine(
+                color = color,
+                start = Offset(0.0f, size.height),
+                end = Offset(size.width, size.height),
+                strokeWidth = 3.dp.toPx(),
+                cap = StrokeCap.Round
+            )
+        }
+    }
+}
 

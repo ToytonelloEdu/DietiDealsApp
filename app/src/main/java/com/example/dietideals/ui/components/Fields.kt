@@ -1,5 +1,6 @@
 package com.example.dietideals.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -38,6 +39,7 @@ import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.Bid
 import com.example.dietideals.domain.models.IncrementalAuction
 import com.example.dietideals.domain.models.SilentAuction
+import com.example.dietideals.domain.models.User
 import kotlinx.coroutines.delay
 import java.text.NumberFormat
 import java.util.Date
@@ -47,12 +49,14 @@ fun AuctioneerIconText(
     auction: Auction,
     primaryColor: Color,
     modifier: Modifier = Modifier,
-    underlineLength: Dp = 160.dp
+    underlineLength: Dp = 160.dp,
+    onClick: (String) -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Center,
         modifier = modifier
+            .clickable { onClick(auction.auctioneerUsername ?: auction.auctioneer?.username ?: "unknown") }
     ) {
         Row {
             AuctioneerIcon(primaryColor)
@@ -74,11 +78,14 @@ fun AuctioneerIconText(
     modifier: Modifier = Modifier,
     underlineLength: Dp = 160.dp,
     underlineDistance: Dp = 2.dp,
+    onClick: (String) -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Center,
         modifier = modifier
+            .clickable { onClick(auctioneer) }
+
     ) {
         Row {
             AuctioneerIcon(primaryColor)
@@ -100,12 +107,14 @@ fun BidderIconText(
     primaryColor: Color,
     modifier: Modifier = Modifier,
     underlineLength: Dp = 160.dp,
-    fontWeight: FontWeight = FontWeight.SemiBold
+    fontWeight: FontWeight = FontWeight.SemiBold,
+    onClick: (String) -> Unit
 ) {
     Column(
         horizontalAlignment = Alignment.Start,
         verticalArrangement = Arrangement.Center,
         modifier = modifier
+            .clickable { onClick(lastBid.bidder ?: lastBid.buyer?.username ?: "unknown") }
     ) {
         Row {
             AuctioneerIcon(primaryColor)
@@ -119,6 +128,26 @@ fun BidderIconText(
         UnderLine(primaryColor, length =  underlineLength)
     }
 }
+
+
+@Composable
+fun BuyerIconText(
+    buyer: String,
+    primaryColor: Color,
+    onClick: (String) -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier.clickable { onClick(buyer) }
+    ) {
+        AuctioneerIcon(primaryColor = primaryColor)
+        Spacer(modifier = Modifier.width(12.dp))
+        Text(text = buyer, fontWeight = FontWeight.Medium)
+    }
+}
+
+
 
 
 @Composable
@@ -144,7 +173,6 @@ fun DateIconText(
         UnderLine(primaryColor, length =  underlineLength)
     }
 }
-
 
 
 
@@ -174,7 +202,6 @@ fun PriceIconText(
         UnderLine(primaryColor, length = 100.dp)
     }
 }
-
 
 
 @Composable
@@ -217,7 +244,6 @@ fun TimerIconText(
         UnderLine(primaryColor, underlineWidth , 0.75.dp, underlineDistance)
     }
 }
-
 
 @Composable
 fun ExpirationIconText(auction: SilentAuction, primaryColor: Color) {
@@ -470,18 +496,6 @@ fun AmountIconText(amount: Double, primaryColor: Color) {
         MoneyIcon(primaryColor = primaryColor)
         Spacer(modifier = Modifier.width(12.dp))
         Text(text = amount.toString(), fontWeight = FontWeight.SemiBold)
-    }
-}
-
-@Composable
-fun BuyerIconText(buyer: String, primaryColor: Color) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
-    ) {
-        AuctioneerIcon(primaryColor = primaryColor)
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(text = buyer, fontWeight = FontWeight.Medium)
     }
 }
 
