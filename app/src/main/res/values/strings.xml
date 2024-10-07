@@ -16,5 +16,5 @@
     <string name="my_bid_auction_details">My Bid Auction Details</string>
     <string name="new_auction">New Auction</string>
     <string name="user">User</string>
-    <string name="restapi_url">http://16.171.154.143:8080/api/1.0/</string>
+    <string name="restapi_url">http://13.53.187.203:8080/api/1.0/</string>
 </resources>
