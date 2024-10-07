@@ -1,26 +1,49 @@
 package com.example.dietideals.data.repos
 
+import android.util.Log
 import com.example.dietideals.data.network.NetworkApiService
+import com.example.dietideals.data.persistence.daos.NotificationDao
 import com.example.dietideals.domain.models.Notification
 
 interface NotificationsRepository {
     suspend fun getNotificationsForUser(username: String, token: String? = null): List<Notification>
+    suspend fun addNotification(notification: Notification)
+    suspend fun deleteNotification(notification: Notification)
 }
 
 class NetworkNotificationsRepository(
     private val networkData: NetworkApiService
 ) : NotificationsRepository {
-    override suspend fun getNotificationsForUser(username: String, token: String?): List<Notification> =
-        networkData.getNotifications(username, token!!)
+    override suspend fun getNotificationsForUser(username: String, token: String?): List<Notification> {
+        val notifications = networkData.getNotifications(token!!, username)
+        Log.d("NetworkNotificationsRepository", "Notifications: $notifications")
+        return notifications.map { it.toNotification() }
+    }
+
+    override suspend fun addNotification(notification: Notification) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun deleteNotification(notification: Notification) {
+        TODO("Not yet implemented")
+    }
 
 
 }
 
 class OfflineNotificationsRepository(
-    private val notificationsDao: Notification
+    private val notificationsDao: NotificationDao
 ): NotificationsRepository {
     override suspend fun getNotificationsForUser(username: String, token: String?): List<Notification> {
-        TODO("Not yet implemented")
+        return notificationsDao.getNotifications().map { it.toNotification() }
+    }
+
+    override suspend fun addNotification(notification: Notification) {
+        return notificationsDao.insert(notification.toDbNotification())
+    }
+
+    override suspend fun deleteNotification(notification: Notification) {
+        return notificationsDao.delete(notification.toDbNotification())
     }
 
 }
