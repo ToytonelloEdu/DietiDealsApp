@@ -63,10 +63,10 @@ class IncrementalAuctionTest {
         pictures = emptyList(),
         objectName = "Telecomando",
         description = "Telecomando per TV",
-        date = Timestamp.valueOf("2024-10-08 18:00:00"),
+        date = Timestamp.valueOf("2024-10-05 18:00:00"),
         bids = mutableListOf(
-            Bid(amount = 12.00, time = Timestamp.valueOf("2024-10-08 18:33:21")),
-            Bid(amount = 14.00, time = Timestamp.valueOf("2024-10-08 18:45:00"))
+            Bid(amount = 12.00, time = Timestamp.valueOf("2024-10-05 18:33:21")),
+            Bid(amount = 14.00, time = Timestamp.valueOf("2024-10-05 18:45:00"))
         ),
         lastBid = null,
         tags = emptyList(),
@@ -91,17 +91,17 @@ class IncrementalAuctionTest {
     }
 
     @Test
+    fun testHasBeenOverFor_3DaysAuctionOver(){
+        assertTrue(incrementalAuction4.hasBeenOverFor(3))
+    }
+
+    @Test
     fun testHasBeenOverFor_5DaysAuctionIsNotOver(){
         assertFalse("L'asta è già terminata", incrementalAuction3.hasBeenOverFor(5))
     }
 
     @Test
-    fun testHasBeenOverFor_10DaysAuctionIsNotOverNullLastBid(){
-        assertFalse("L'asta è già terminata", incrementalAuction4.hasBeenOverFor(10))
-    }
-
-    @Test
-    fun testHasBeenOverFor_18Days_throwsException(){
+    fun testHasBeenOverFor_15Days_throwsException(){
         assertThrows(java.lang.IllegalArgumentException::class.java) {
             incrementalAuction.hasBeenOverFor(15)
         }
@@ -110,7 +110,7 @@ class IncrementalAuctionTest {
     @Test
     fun testHasBeenOverFor_NegativeDays_throwsException(){
         assertThrows(java.lang.IllegalArgumentException::class.java) {
-            incrementalAuction3.hasBeenOverFor(-1)
+            incrementalAuction4.hasBeenOverFor(-1)
         }
     }
 
