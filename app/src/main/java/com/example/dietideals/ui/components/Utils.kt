@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.dietideals.domain.auxiliary.NewAuction
+import com.example.dietideals.domain.auxiliary.ProfileForm
 import java.io.File
 import java.util.Date
 
@@ -111,5 +112,18 @@ fun getGalleryLauncher(
     if (uri != null) {
         newAuction.picturePaths.add(uri)
         onValueChange(newAuction)
+    }
+}
+
+@Composable
+fun getGalleryLauncher(
+    profileForm: ProfileForm,
+    onValueChange: (ProfileForm) -> Unit,
+) = rememberLauncherForActivityResult(
+    contract = ActivityResultContracts.PickVisualMedia()
+) { uri: Uri? ->
+    if (uri != null) {
+        profileForm.photo = uri
+        onValueChange(profileForm)
     }
 }

@@ -3,6 +3,7 @@ package com.example.dietideals.data.persistence.entities
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.Relation
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.IncrementalAuction
 import com.example.dietideals.domain.models.SilentAuction
@@ -26,6 +27,7 @@ data class DbAuction(
     val startingPrice: Double? = null,
     val raisingThreshold: Double? = null,
 ) {
+
     fun toAuction(): Auction {
         return when (auctionType) {
             "SilentAuction" -> SilentAuction(this)

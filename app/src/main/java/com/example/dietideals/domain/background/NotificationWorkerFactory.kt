@@ -5,11 +5,13 @@ import androidx.work.ListenableWorker
 import androidx.work.WorkerFactory
 import androidx.work.WorkerParameters
 import com.example.dietideals.data.repos.NotificationsRepository
-import retrofit2.Retrofit
+import com.example.dietideals.data.repos.UsersRepository
+import com.example.dietideals.domain.NotificationsUseCase
 
 class NotificationWorkerFactory(
     private val onlineNotificationsRepo: NotificationsRepository,
     private val offlineNotificationsRepo: NotificationsRepository,
+    private val usersRepository: UsersRepository,
 ) : WorkerFactory() {
     override fun createWorker(
         appContext: Context,
@@ -21,8 +23,11 @@ class NotificationWorkerFactory(
                 NotificationWorker(
                     appContext,
                     workerParameters,
-                    onlineNotificationsRepo,
-                    offlineNotificationsRepo
+                    NotificationsUseCase(
+                        onlineNotificationsRepo,
+                        offlineNotificationsRepo,
+                        usersRepository
+                    )
                 )
             }
             else -> null

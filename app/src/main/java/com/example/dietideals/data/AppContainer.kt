@@ -101,7 +101,7 @@ class RoomAppContainer(
     }
 
     override val notificationsRepository: NotificationsRepository by lazy {
-        OfflineNotificationsRepository(Notification(0))
+        OfflineNotificationsRepository(database.notificationDao())
     }
 
     override val authRepository: AuthRepository

@@ -33,6 +33,7 @@ data class Bid(
 
     fun toNetBid() : NetBid {
         return NetBid(
+            id = id,
             auction = auction?.toNetAuction(),
             buyer = buyer?.toNetUser(),
             bidder = bidder,

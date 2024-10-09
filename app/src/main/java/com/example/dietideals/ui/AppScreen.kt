@@ -5,10 +5,14 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -20,6 +24,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -42,10 +47,12 @@ import com.example.dietideals.ui.components.textForTopBar
 import com.example.dietideals.ui.views.AuctionDetailsView
 import com.example.dietideals.ui.views.AuctionsView
 import com.example.dietideals.ui.views.BidsView
+import com.example.dietideals.ui.views.EditProfileView
 import com.example.dietideals.ui.views.HomeView
 import com.example.dietideals.ui.views.LogInView
 import com.example.dietideals.ui.views.MyAuctionDetailsView
 import com.example.dietideals.ui.views.NewAuctionView
+import com.example.dietideals.ui.views.OtherProfileView
 import com.example.dietideals.ui.views.ProfileView
 import com.example.dietideals.ui.views.SignUpView
 
@@ -79,11 +86,12 @@ fun AppScreen(
         topBar = {
             val auctionState = uiState.currentAuctionState
             val userState = uiState.userState
+            val otherUserState = uiState.otherUserState
             AppTopBar(
                 currentScreen = currentScreen,
                 canNavigateBack = navController.previousBackStackEntry != null,
                 navigateUp = { navController.navigateUp() },
-                textForTopBar = { textForTopBar(currentScreen, auctionState, userState) }
+                textForTopBar = { textForTopBar(currentScreen, auctionState, userState, otherUserState) }
             ) {
                 if (!uiState.isOnline) {
                     OffileIcon()
@@ -106,7 +114,7 @@ fun AppScreen(
                 ) {
                     NotifIconButton(enabled = uiState.userState !is UserState.NotLoggedIn) { viewModel.showNotificationsDialog() }
                 }
-                if (currentScreen == AppView.Profile) {
+                if (currentScreen == AppView.Profile && !uiState.isEditingProfile) {
                     SettingsIconButton { }
                     LogoutIconButton { viewModel.onLogoutClicked() }
                 }
@@ -126,19 +134,49 @@ fun AppScreen(
                     }
                 },
                 onHomeClick = { navController.navigate(AppView.Home.name) },
-                onUserClick = { navController.navigate(AppView.Profile.name) }
+                onUserClick = {
+                    viewModel.onProfileEditCancel()
+                    navController.navigate(AppView.Profile.name)
+                }
             )
         },
         floatingActionButton = {
             if(uiState.userState !is UserState.NotLoggedIn) {
                 when (currentScreen) {
                     AppView.Profile -> {
-                        FloatingActionButton(
-                            onClick = { /*TODO*/ },
-                            containerColor = MaterialTheme.colorScheme.primary
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            EditIcon(primaryColor = Color.White)
+                            if(uiState.isEditingProfile){
+                                FloatingActionButton(
+                                    onClick = {
+                                        viewModel.onProfileEditCancel()
+                                    },
+                                    containerColor = MaterialTheme.colorScheme.tertiary
+                                ) {
+                                    Icon(Icons.Default.Close, null, tint = Color.White)
+                                }
+                            }
+                            val context = LocalContext.current
+                            FloatingActionButton(
+                                onClick = {
+                                    if(uiState.isEditingProfile)
+                                        viewModel.onProfileEditConfirm(
+                                            uiState.profileEditState.profileForm,
+                                            context
+                                        )
+                                    else
+                                        viewModel.onProfileEditStart()
+                                },
+                                containerColor = MaterialTheme.colorScheme.primary
+                            ) {
+                                if(uiState.isEditingProfile)
+                                    Icon(Icons.Default.Check,null, tint = Color.White)
+                                else
+                                    EditIcon(primaryColor = Color.White)
+                            }
                         }
+
                     }
                     AppView.Auctions -> {
                         FloatingActionButton(
@@ -173,6 +211,10 @@ fun AppScreen(
                 popEnterTransition = { EnterTransition.None },
                 popExitTransition = { ExitTransition.None }
             ) {
+                val onUserClicked: (String) -> Unit = { username ->
+                    viewModel.onAuctioneerClicked(username)
+                    navController.navigate(AppView.UserDetails.name)
+                }
                 composable(
                     AppView.Home.name,
                     enterTransition = { EnterTransition.None },
@@ -195,6 +237,7 @@ fun AppScreen(
                                 }
 
                             },
+                            onAuctioneerClicked = onUserClicked,
                             onRefresh = { viewModel.refreshHomePage() }
                         )
                     }
@@ -207,6 +250,7 @@ fun AppScreen(
                             tween(700)
                         )
                     },
+                    popEnterTransition = { EnterTransition.None },
                     popExitTransition = {
                         return@composable slideOutOfContainer(
                             AnimatedContentTransitionScope.SlideDirection.End,
@@ -217,6 +261,7 @@ fun AppScreen(
                     AuctionDetailsView(
                         currentState = uiState.currentAuctionState,
                         directBid = uiState.isDirectBid,
+                        onAuctioneerClick = onUserClicked,
                         onSubmit = { auction, amount ->
                             if (uiState.userState !is UserState.Bidder)
                                 navController.navigate(AppView.LogIn.name)
@@ -234,6 +279,7 @@ fun AppScreen(
                             viewModel.onAuctionClicked(auction, false)
                             navController.navigate(AppView.MyAuctionDetails.name)
                         },
+                        onAuctioneerClicked = onUserClicked,
                         isRefreshing = uiState.isRefreshing,
                         onRefresh = {
                             viewModel.refreshUserAuctions(true)
@@ -248,6 +294,7 @@ fun AppScreen(
                             tween(700)
                         )
                     },
+                    popEnterTransition = { EnterTransition.None },
                     popExitTransition = {
                         return@composable slideOutOfContainer(
                             AnimatedContentTransitionScope.SlideDirection.End,
@@ -257,7 +304,10 @@ fun AppScreen(
                 ) {
                     MyAuctionDetailsView(
                         currentState = uiState.currentAuctionState,
-                        onAccept = {}
+                        onAuctioneerClick = onUserClicked,
+                        onAccept = { auction, bid ->
+                            viewModel.onAuctionAccept(auction, bid)
+                        }
                     )
                 }
                 composable(AppView.Bids.name) {
@@ -268,6 +318,7 @@ fun AppScreen(
                             navController.navigate(AppView.MyBidAuctionDetails.name)
                         },
                         isRefreshing = uiState.isRefreshing,
+                        onAuctioneerClick = onUserClicked,
                         onRefresh = {
                             viewModel.refreshUserBids(true)
                         }
@@ -281,6 +332,7 @@ fun AppScreen(
                             tween(700)
                         )
                     },
+                    popEnterTransition = { EnterTransition.None },
                     popExitTransition = {
                         return@composable slideOutOfContainer(
                             AnimatedContentTransitionScope.SlideDirection.End,
@@ -291,7 +343,11 @@ fun AppScreen(
                     AuctionDetailsView(
                         currentState = uiState.currentAuctionState,
                         directBid = uiState.isDirectBid,
-                        onSubmit = { _, _ -> }
+                        onAuctioneerClick = onUserClicked,
+                        onSubmit = { auction, amount ->
+                            viewModel.onBidSubmit(auction, amount)
+                            navController.navigate(AppView.Bids.name)
+                        }
                     )
                 }
                 composable(AppView.Profile.name,
@@ -305,7 +361,17 @@ fun AppScreen(
                             navController.navigate(AppView.LogIn.name)
                         }
 
-                        else -> ProfileView(uiState.userState)
+                        else -> {
+                            if (uiState.isEditingProfile)
+                                EditProfileView(
+                                    uiState.userState,
+                                    uiState.profileEditState,
+                                ) { profile ->
+                                    viewModel.onProfileFormChanged(profile)
+                                }
+                            else
+                                ProfileView(uiState.userState)
+                        }
                     }
 
                 }
@@ -344,7 +410,12 @@ fun AppScreen(
                     }
                 }
                 composable(AppView.UserDetails.name) {
-
+                    OtherProfileView(
+                        uiState.otherUserState,
+                        onRetry = {
+                            //viewModel.refreshOtherUser()
+                        }
+                    )
                 }
                 composable(AppView.NewAuction.name) {
                     val context = LocalContext.current
@@ -374,7 +445,7 @@ fun AppScreen(
             }
             if (uiState.showNotificationsDialog) {
                 NotificationsDialog(
-                    notifications = listOf(),
+                    notifications = uiState.notifications.toList(),
                     onNotificationClick = { /*TODO*/ },
                     onValueChange = { /*TODO*/ },
                     onDismiss = { viewModel.showNotificationsDialog(false) }

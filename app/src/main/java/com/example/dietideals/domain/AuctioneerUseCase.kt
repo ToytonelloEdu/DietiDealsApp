@@ -9,6 +9,8 @@ import com.example.dietideals.data.repos.UsersRepository
 import com.example.dietideals.domain.auxiliary.NewAuction
 import com.example.dietideals.domain.models.Auction
 import com.example.dietideals.domain.models.Auctioneer
+import com.example.dietideals.domain.models.Bid
+import com.example.dietideals.ui.AuctionFetchState
 import com.example.dietideals.ui.NewAuctionState
 import com.example.dietideals.ui.UserState
 import kotlinx.coroutines.Dispatchers
@@ -90,6 +92,23 @@ class AuctioneerUseCase(
         } catch (e: Exception) {
             Log.e("AppViewModel", "Error: ${e.message}")
             state.update { it.copy(isRefreshing = false, isOnline = false) }
+        }
+    }
+
+    suspend fun acceptBid(state: MutableStateFlow<AppUiState>, auction: Auction, bid: Bid) {
+        try {
+            var acceptedAuction: Auction
+            withContext(Dispatchers.IO) {
+                acceptedAuction = auctionsRepository.acceptBidForAuction(auction.id!!, bid.id!!, AuthenticationUseCase.token)
+            }
+
+            state.update {
+                it.copy(
+                    currentAuctionState = AuctionFetchState.AuctionSuccess(acceptedAuction)
+                )
+            }
+        } catch (e: Exception) {
+            Log.e("AppViewModel", "Error: ${e.message}")
         }
     }
 }

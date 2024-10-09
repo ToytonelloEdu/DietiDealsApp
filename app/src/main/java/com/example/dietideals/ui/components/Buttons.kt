@@ -449,14 +449,14 @@ fun ExpandButton(expanded: Boolean, onClick: () -> Unit, primaryColor: Color) {
 }
 
 @Composable
-fun AcceptButton(onAccept: () -> Unit, primaryColor: Color) {
+fun AcceptButton(onAccept: () -> Unit, enabled: Boolean, primaryColor: Color) {
     Box(
         modifier = Modifier
             .shadow(2.dp, RoundedCornerShape(2.dp))
             .size(90.dp, 25.dp)
             .clip(RoundedCornerShape(2.dp))
-            .background(primaryColor)
-            .clickable { onAccept() },
+            .background(primaryColor.let { if (enabled) it else it.darken(0.4f) })
+            .clickable(enabled) { onAccept() },
         contentAlignment = Alignment.Center
     ) {
         Text(

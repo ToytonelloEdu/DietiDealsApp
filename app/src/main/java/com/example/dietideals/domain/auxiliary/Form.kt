@@ -32,6 +32,10 @@ class FormField<T> (
                 e.message ?: "Invalid"
             }
         }
+
+    override fun toString(): String {
+        return value.toString()
+    }
 }
 
 fun FormField<Date>.validator(): (value: Date) -> Boolean {

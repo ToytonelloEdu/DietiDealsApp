@@ -312,3 +312,40 @@ fun SearchIcon(
             .padding(4.dp)
     )
 }
+
+
+@Composable
+fun InstagramIcon(
+    modifier: Modifier = Modifier,
+) {
+    Icon(
+        painter = painterResource(id = R.drawable.instagram_logo),
+        contentDescription = null,
+        modifier = modifier.size(25.dp),
+        tint = Color.Unspecified
+    )
+}
+
+@Composable
+fun TwitterIcon(
+    modifier: Modifier = Modifier,
+) {
+    Icon(
+        painter = painterResource(id = R.drawable.twitter_logo),
+        contentDescription = null,
+        modifier = modifier.size(25.dp),
+        tint = Color.Unspecified
+    )
+}
+
+@Composable
+fun FacebookIcon(
+    modifier: Modifier = Modifier,
+) {
+    Icon(
+        painter = painterResource(id = R.drawable.facebook_logo),
+        contentDescription = null,
+        modifier = modifier.size(25.dp),
+        tint = Color.Unspecified
+    )
+}

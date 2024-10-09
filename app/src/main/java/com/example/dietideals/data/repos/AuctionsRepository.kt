@@ -12,6 +12,7 @@ interface AuctionsRepository {
     suspend fun getAuctionById(id: Int): Auction
     suspend fun getAuctionsByUser(username: String) : List<Auction>
     suspend fun addAuction(auction: Auction, token: String? = null) : Auction
+    suspend fun acceptBidForAuction(auctionId: Int, bidId: Int, token: String? = null) : Auction
 }
 
 class NetworkAuctionsRepository(
@@ -31,15 +32,17 @@ class NetworkAuctionsRepository(
         ).map { it.toAuction() }
     }
 
-    override suspend fun getAuctionById(id: Int): Auction =
+    override suspend fun getAuctionById(id: Int) =
         networkData.getAuctionById(id).toAuction()
 
     override suspend fun getAuctionsByUser(username: String): List<Auction> =
         networkData.getAuctionsByUser(username).map { it.toAuction() }
 
-    override suspend fun addAuction(auction: Auction, token: String?): Auction {
-        return networkData.postAuction(token!!, auction.toNetAuction()).toAuction()
-    }
+    override suspend fun addAuction(auction: Auction, token: String?) =
+        networkData.postAuction(token!!, auction.toNetAuction()).toAuction()
+
+    override suspend fun acceptBidForAuction(auctionId: Int, bidId: Int, token: String?) =
+        networkData.acceptBid(token!!, auctionId, bidId).toAuction()
 }
 
 class OfflineAuctionsRepository(
@@ -48,7 +51,6 @@ class OfflineAuctionsRepository(
 
     override suspend fun getAuctions(): List<Auction> =
         auctionDao.getAuctions().map {
-            Log.d("HomePage", "Color: ${it.medianColor}")
             it.toAuction()
         }
 
@@ -66,6 +68,10 @@ class OfflineAuctionsRepository(
     override suspend fun addAuction(auction: Auction, token: String?): Auction {
         auctionDao.insert(auction.toDbAuction())
         return auction
+    }
+
+    override suspend fun acceptBidForAuction(auctionId: Int, bidId: Int, token: String?): Auction {
+        TODO("Not yet implemented")
     }
 
 }

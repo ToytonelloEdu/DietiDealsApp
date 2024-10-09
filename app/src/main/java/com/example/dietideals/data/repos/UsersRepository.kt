@@ -8,7 +8,7 @@ import com.example.dietideals.domain.models.User
 interface UsersRepository {
     suspend fun getOwnUser(): User
     suspend fun getUserByHandle(handle: String): User
-    suspend fun updateUser(user: User): User
+    suspend fun updateUser(user: User, token: String? = null): User
     suspend fun addUser(user: User): User
     suspend fun deleteUser(user: User)
 }
@@ -27,8 +27,8 @@ class NetworkUsersRepository(
         networkData.getUserByHandle(handle).toUser()
 
 
-    override suspend fun updateUser(user: User): User {
-        TODO("Not yet implemented")
+    override suspend fun updateUser(user: User, token: String?): User {
+        return networkData.updateUser(token!! ,user.username ,user.toNetUser()).toUser()
     }
 
     override suspend fun deleteUser(user: User) {
@@ -56,7 +56,7 @@ class OfflineUsersRepository(
         return user
     }
 
-    override suspend fun updateUser(user: User): User {
+    override suspend fun updateUser(user: User, token: String?): User {
         ownUserDao.update(user.toDbUser())
         return ownUserDao.getOwnUser().toUser()
     }
