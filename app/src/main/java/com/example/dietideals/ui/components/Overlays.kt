@@ -329,8 +329,9 @@ fun NotificationsDialog(
                         verticalArrangement = Arrangement.Top
                     ) {
                         items(notifications.size) {
+                            val reverseIt = (notifications.size -1) - it
                             NotificationCard(
-                                notification = notifications[it],
+                                notification = notifications[reverseIt],
                                 onNotificationClick = onNotificationClick
                             )
                         }

@@ -96,21 +96,14 @@ fun AppScreen(
                 if (!uiState.isOnline) {
                     OffileIcon()
                 }
-                if (currentScreen in listOf(
-                        AppView.AuctionDetails,
-                        AppView.MyAuctionDetails,
-                        AppView.MyBidAuctionDetails
-                    )
+                if (currentScreen in listOf(AppView.AuctionDetails, AppView.MyAuctionDetails, AppView.MyBidAuctionDetails)
                 ) {
                     AuctionDetailsTopBarIcon(auctionState)
                 }
                 if (currentScreen == AppView.Home) {
                     SearchIconButton { viewModel.showSearchDialog() }
                 }
-                if (currentScreen in listOf(
-                        AppView.Home,
-                        AppView.Auctions,
-                    )
+                if (currentScreen in listOf(AppView.Home, AppView.Auctions)
                 ) {
                     NotifIconButton(enabled = uiState.userState !is UserState.NotLoggedIn) { viewModel.showNotificationsDialog() }
                 }

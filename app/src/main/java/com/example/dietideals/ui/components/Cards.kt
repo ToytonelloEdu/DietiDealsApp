@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -455,17 +457,17 @@ fun NotificationCard(
 ) {
     val read = notification.read
     Box(
+        contentAlignment = Alignment.Center,
         modifier = modifier
             .fillMaxSize()
-            .height(60.dp)
+            .defaultMinSize(minHeight = 60.dp)
             .background(
                 color = if (read) Color.White else MaterialTheme.colorScheme.surfaceVariant,
                 shape = RoundedCornerShape(bottomStart = 5.dp ,bottomEnd = 5.dp)
             )
             .drawRoundedUnderline(primaryColor)
             .clip(RoundedCornerShape(bottomStart = 5.dp ,bottomEnd = 5.dp))
-            .clickable { onNotificationClick(notification) },
-        contentAlignment = Alignment.Center
+            .clickable { onNotificationClick(notification) }
     ) {
         Text(
             text = notification.toString(),

@@ -36,7 +36,8 @@ val upNavigableScreens = listOf(
     AppView.SignUp,
     AppView.MyAuctionDetails,
     AppView.MyBidAuctionDetails,
-    AppView.NewAuction
+    AppView.NewAuction,
+    AppView.UserDetails
 )
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -109,11 +109,11 @@ fun UserProfileView(user: User, isOwnProfile: Boolean, modifier: Modifier = Modi
 fun OtherProfileView(
     profileFetchState: ProfileFetchState,
     modifier: Modifier = Modifier,
-    onRetry: () -> Unit = {}
+    onRetry: () -> Unit
 ) {
     when (profileFetchState) {
-        is ProfileFetchState.Loading -> LoadingView(modifier)
-        is ProfileFetchState.Error -> NetworkErrorView(modifier, onRetry)
+        is ProfileFetchState.Loading -> LoadingView(modifier.fillMaxSize())
+        is ProfileFetchState.Error -> NetworkErrorView(modifier.fillMaxSize(), onRetry)
         is ProfileFetchState.ProfileSuccess -> {
             UserProfileView(profileFetchState.user, false, modifier)
         }

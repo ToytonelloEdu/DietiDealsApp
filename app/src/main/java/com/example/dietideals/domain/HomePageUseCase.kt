@@ -47,7 +47,7 @@ class HomePageUseCase (
 
     suspend fun saveAuctionToDb(auctions: List<Auction>) {
         auctions.forEach {
-            if(!it.hasBeenOverFor(3))
+            if(!it.hasBeenOverFor(7))
                 offlineAuctionsRepository.addAuction(it)
         }
     }

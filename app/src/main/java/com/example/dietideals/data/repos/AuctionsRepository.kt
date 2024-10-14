@@ -1,6 +1,5 @@
 package com.example.dietideals.data.repos
 
-import android.util.Log
 import com.example.dietideals.data.network.NetworkApiService
 import com.example.dietideals.data.persistence.daos.AuctionDao
 import com.example.dietideals.domain.auxiliary.SearchQuery
@@ -71,7 +70,7 @@ class OfflineAuctionsRepository(
     }
 
     override suspend fun acceptBidForAuction(auctionId: Int, bidId: Int, token: String?): Auction {
-        TODO("Not yet implemented")
+        throw NotImplementedError()
     }
 
 }

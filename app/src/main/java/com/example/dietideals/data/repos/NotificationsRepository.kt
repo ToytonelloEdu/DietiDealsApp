@@ -21,11 +21,11 @@ class NetworkNotificationsRepository(
     }
 
     override suspend fun addNotification(notification: Notification) {
-        TODO("Not yet implemented")
+        throw NotImplementedError()
     }
 
     override suspend fun deleteNotification(notification: Notification) {
-        TODO("Not yet implemented")
+        throw NotImplementedError()
     }
 
 

@@ -199,7 +199,7 @@ class AppViewModel(
 
     fun showNotificationsDialog(show: Boolean = !_uiState.value.showNotificationsDialog) {
         viewModelScope.launch {
-            if (show) notificationsUseCase.refreshNotifications(_uiState)
+            if (show) launch { notificationsUseCase.refreshNotifications(_uiState) }
 
             _uiState.update {
                 it.copy(
