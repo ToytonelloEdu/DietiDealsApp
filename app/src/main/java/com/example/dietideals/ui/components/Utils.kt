@@ -1,8 +1,12 @@
 package com.example.dietideals.ui.components
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -126,4 +130,74 @@ fun getGalleryLauncher(
         profileForm.photo = uri
         onValueChange(profileForm)
     }
+}
+
+fun openInstagramProfile(context: Context, instagramUsername: String) {
+    val instagramUrl = "https://www.instagram.com/$instagramUsername"
+    val instagramAppUri = Uri.parse("http://instagram.com/_u/$instagramUsername")
+
+    // Try to open the Instagram app
+    val intent = Intent(Intent.ACTION_VIEW, instagramAppUri).apply {
+        setPackage("com.instagram.android")
+    }
+
+    // Check if the Instagram app is installed
+    if (intent.resolveActivity(context.packageManager) != null) {
+        context.startActivity(intent)
+    } else {
+        // Fallback to the web version
+        val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(instagramUrl))
+        context.startActivity(webIntent)
+    }
+}
+
+fun openTwitterProfile(context: Context, twitterUsername: String) {
+    val twitterUrl = "https://twitter.com/$twitterUsername"
+    val twitterAppUri = Uri.parse("twitter://user?screen_name=$twitterUsername")
+
+    // Try to open the Twitter app
+    val intent = Intent(Intent.ACTION_VIEW, twitterAppUri).apply {
+        setPackage("com.twitter.android")
+    }
+
+    // Check if the Twitter app is installed
+    if (intent.resolveActivity(context.packageManager) != null) {
+        context.startActivity(intent)
+    } else {
+        // Fallback to the web version
+        val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(twitterUrl))
+        context.startActivity(webIntent)
+    }
+}
+
+fun openFacebookProfile(context: Context, facebookProfileId: String) {
+    val facebookAppUri = Uri.parse("fb://profile/$facebookProfileId")
+    val facebookUrl = "https://www.facebook.com/$facebookProfileId"
+
+    // Try to open the Facebook app
+    val intent = Intent(Intent.ACTION_VIEW, facebookAppUri).apply {
+        setPackage("com.facebook.katana")
+    }
+
+    // Check if the Facebook app is installed
+    if (intent.resolveActivity(context.packageManager) != null) {
+        context.startActivity(intent)
+    } else {
+        // Fallback to the web version
+        val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(facebookUrl))
+        context.startActivity(webIntent)
+    }
+}
+fun openWebsite(context: Context, websiteUrl: String) {
+    val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(websiteUrl))
+    context.startActivity(webIntent)
+}
+
+fun copyTextToClipboard(context: Context, text: String) {
+    val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+    val clip = ClipData.newPlainText("label", text)
+    clipboard.setPrimaryClip(clip)
+
+    // Optionally, show a toast message to notify the user
+    Toast.makeText(context, "Text copied to clipboard", Toast.LENGTH_SHORT).show()
 }

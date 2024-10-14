@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.dietideals.R
+import com.example.dietideals.domain.AuthenticationUseCase.Companion.user
 import com.example.dietideals.domain.auxiliary.ProfileForm
 import com.example.dietideals.domain.models.Auctioneer
 import com.example.dietideals.domain.models.Buyer
@@ -67,7 +68,12 @@ import com.example.dietideals.ui.components.LoadingView
 import com.example.dietideals.ui.components.NetworkErrorView
 import com.example.dietideals.ui.components.TwitterIcon
 import com.example.dietideals.ui.components.UnderLine
+import com.example.dietideals.ui.components.copyTextToClipboard
 import com.example.dietideals.ui.components.getGalleryLauncher
+import com.example.dietideals.ui.components.openFacebookProfile
+import com.example.dietideals.ui.components.openInstagramProfile
+import com.example.dietideals.ui.components.openTwitterProfile
+import com.example.dietideals.ui.components.openWebsite
 
 @Composable
 fun ProfileView(userState: UserState, modifier: Modifier = Modifier, isOwnProfile: Boolean = true) {
@@ -90,7 +96,7 @@ fun UserProfileView(user: User, isOwnProfile: Boolean, modifier: Modifier = Modi
         verticalArrangement = Arrangement.spacedBy(28.dp, Alignment.Top)
     ) {
         UserMainInfosRow(user)
-        UserLinksRows(user.links, isOwnProfile)
+        UserLinksRows(user.links, user.email, isOwnProfile)
         UserFieldBox("Bio", user.bio ?: "No bio",
             Modifier
                 .wrapContentHeight(),
@@ -165,7 +171,8 @@ fun UserMainInfosRow(user: User, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun UserLinksRows(links: Links?, isOwnProfile: Boolean, modifier: Modifier = Modifier) {
+fun UserLinksRows(links: Links?, email: String, isOwnProfile: Boolean, modifier: Modifier = Modifier) {
+    val context = LocalContext.current
     Column (
         modifier = modifier
             .fillMaxWidth()
@@ -185,6 +192,7 @@ fun UserLinksRows(links: Links?, isOwnProfile: Boolean, modifier: Modifier = Mod
                     fontSize = 20.sp
                 )
             )
+
             LazyRow(
                 modifier = modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.Start),
@@ -196,22 +204,27 @@ fun UserLinksRows(links: Links?, isOwnProfile: Boolean, modifier: Modifier = Mod
                         contentDescription = null,
                         modifier = Modifier
                             .size(25.dp)
-                            .clickable(
-                                enabled = !isOwnProfile
-                            ) {
-
+                            .clickable {
+                                copyTextToClipboard(
+                                    context,
+                                    email
+                                )
                             }
                     )
                 }
+
                 if(links != null){
-                    Log.d("ProfileView", links.toString())
                     val map = links.toLinksMap()
+
                     item{
                         if (map.containsKey("instagram")) {
                             InstagramIcon(
                                 modifier = Modifier
                                     .clickable {
-
+                                        openInstagramProfile(
+                                            context,
+                                            links.instagram!!
+                                        )
                                     }
                             )
                         }
@@ -221,7 +234,10 @@ fun UserLinksRows(links: Links?, isOwnProfile: Boolean, modifier: Modifier = Mod
 
                             TwitterIcon(
                                 Modifier.clickable {
-
+                                    openTwitterProfile(
+                                        context,
+                                        links.twitter!!
+                                    )
                                 }
                             )
                         }
@@ -230,7 +246,10 @@ fun UserLinksRows(links: Links?, isOwnProfile: Boolean, modifier: Modifier = Mod
                         if (map.containsKey("facebook")) {
                             FacebookIcon(
                                 Modifier.clickable {
-
+                                    openFacebookProfile(
+                                        context,
+                                        links.facebook!!
+                                    )
                                 }
                             )
                         }
@@ -267,7 +286,10 @@ fun UserLinksRows(links: Links?, isOwnProfile: Boolean, modifier: Modifier = Mod
                     textDecoration = TextDecoration.Underline,
                     modifier = Modifier
                         .clickable {
-
+                            openWebsite(
+                                context,
+                                links.website
+                            )
                         }
                 )
             }
