@@ -32,22 +32,27 @@ class SilentAuctionTest {
         expirationDate = Timestamp.valueOf("2025-02-28 15:43:05"))
 
     @Test
-    fun testHasBeenOverFor_1DaysSilentAuction1() {
-        assertTrue(silentAuction.hasBeenOverFor(1))
+    fun testHasBeenOverFor_0DaysSilentAuctionOver() {
+        assertTrue(silentAuction.hasBeenOverFor(0))
     }
 
     @Test
-    fun testHasBeenOverFor_14DaysSilentAuction2(){
+    fun testHasBeenOverFor_14DaysSilentAuctionOver(){
         assertTrue(silentAuction2.hasBeenOverFor(14))
     }
 
     @Test
-    fun testHasBeenOverFor_8DaysSilentAuction1(){
+    fun testHasBeenOverFor_8DaysSilentAuctionOver(){
         assertTrue(silentAuction2.hasBeenOverFor(8))
     }
 
     @Test
-    fun testHasBeenOverFor5DaysSilentAuction3(){
+    fun testHasBeenOverFor_3DaysSilentAuctionOver(){
+        assertTrue(silentAuction.hasBeenOverFor(3))
+    }
+
+    @Test
+    fun testHasBeenOverFor_5DaysSilentAuctionNotOver(){
         assertFalse("L'asta è già terminata", silentAuction3.hasBeenOverFor(5))
     }
 
@@ -61,7 +66,7 @@ class SilentAuctionTest {
     @Test
     fun testHasBeenOverFor_NegativeDays_throwsException(){
         assertThrows(java.lang.IllegalArgumentException::class.java) {
-            silentAuction2.hasBeenOverFor(-2)
+            silentAuction.hasBeenOverFor(-2)
         }
     }
 }
